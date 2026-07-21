@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1218" />
+  <meta name="description" content="雅思笔记词库拼写练习，可安装到手机主屏幕" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="雅思刷词" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <title>雅思词库 · 刷词</title>
+  <style>
+    :root {
+      --bg: #0e1218;
+      --card: #171d28;
+      --card2: #1f2838;
+      --line: #2c3648;
+      --text: #e9eef7;
+      --muted: #8b98ad;
+      --accent: #5b9fd4;
+      --good: #3ecf8e;
+      --bad: #f07178;
+      --gold: #e8c468;
+      --warn: #e0a458;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 64px; }
+    header h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    header p { margin: 0 0 16px; color: var(--muted); font-size: 0.88rem; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .stat b { display: block; font-size: 1.15rem; color: var(--good); }
+    .stat span { font-size: 0.7rem; color: var(--muted); }
+    .tabs {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .tab, .chip, button.btn {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.86rem;
+      cursor: pointer;
+    }
+    .tab.active, .chip.on {
+      background: linear-gradient(135deg, #3d7ea6, #5b9fd4);
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip { padding: 6px 12px; font-size: 0.8rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px 18px;
+      min-height: 280px;
+    }
+    .prompt-zh {
+      font-size: 1.35rem;
+      font-weight: 650;
+      margin: 8px 0 6px;
+      line-height: 1.35;
+    }
+    .prompt-meta {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+    .prompt-ipa {
+      color: var(--gold);
+      font-size: 1rem;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+    }
+    .hint-line {
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 1.4em;
+      margin-bottom: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.12em;
+    }
+    input#answer {
+      width: 100%;
+      font-size: 1.15rem;
+      padding: 14px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      outline: none;
+    }
+    input#answer:focus { border-color: var(--accent); }
+    input#answer.ok { border-color: var(--good); background: rgba(62,207,142,0.08); }
+    input#answer.bad { border-color: var(--bad); background: rgba(240,113,120,0.08); }
+    .actions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 650;
+    }
+    .btn.good { background: rgba(62,207,142,0.15); border-color: var(--good); color: var(--good); }
+    .btn.ghost { background: var(--card2); }
+    .feedback {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.ok { background: rgba(62,207,142,0.12); color: var(--good); }
+    .feedback.bad { background: rgba(240,113,120,0.12); color: #ffb4b8; }
+    .feedback .ans { color: var(--text); font-weight: 650; margin-top: 4px; }
+    .example { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
+    .progress-mini {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .flash-en {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 20px 0 8px;
+      text-align: center;
+    }
+    .flash-back { display: none; text-align: center; }
+    .flash-back.show { display: block; }
+    .flash-front.hide { display: none; }
+    .bank-list {
+      max-height: 420px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .bank-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 12px;
+      font-size: 0.9rem;
+    }
+    .bank-item:last-child { border-bottom: 0; }
+    .bank-item .en { font-weight: 650; }
+    .bank-item .zh { color: var(--muted); font-size: 0.82rem; grid-column: 1 / -1; }
+    .bank-item .tag {
+      font-size: 0.72rem;
+      color: var(--accent);
+      align-self: start;
+    }
+    .bank-item.mastered .en { color: var(--good); }
+    textarea#importBox {
+      width: 100%;
+      min-height: 120px;
+      background: var(--card2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 12px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.8rem;
+      margin: 10px 0;
+    }
+    .help {
+      color: var(--muted);
+      font-size: 0.85rem;
+      background: var(--card);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .help code {
+      background: var(--card2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+    .session-bar {
+      height: 6px;
+      background: var(--card2);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .session-bar i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--good), var(--accent));
+      transition: width 0.25s;
+    }
+    .install-banner {
+      display: none;
+      background: linear-gradient(135deg, #1a3048, #243a28);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+    }
+    .install-banner.show { display: block; }
+    .install-banner b { color: var(--gold); }
+    .install-banner .row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;
+    }
+    .install-banner .close {
+      margin-left: auto;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    @media (display-mode: standalone) {
+      .install-banner { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="install-banner" id="installBanner">
+      <div><b>装到手机主屏幕</b>，像 App 一样点开用（免费 GitHub 域名，无需自己买域名）</div>
+      <div id="installIosHint" style="display:none;margin-top:8px;color:var(--muted)">
+        iPhone：用 <b style="color:var(--text)">Safari</b> 打开本页 → 点底部分享
+        <span style="color:var(--accent)">□↑</span> → <b style="color:var(--text)">添加到主屏幕</b>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnInstall" style="display:none">安装到桌面</button>
+        <button class="btn ghost" id="btnShowIos">iPhone 怎么装？</button>
+        <button class="close" id="btnDismissInstall" type="button">先不用</button>
+      </div>
+    </div>
+
+    <header>
+      <h1>📚 雅思词库 · 刷词</h1>
+      <p>词库来自你的笔记 · 拼写练习 · 可离线 · 可装主屏幕</p>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><b id="sTotal">0</b><span>词库</span></div>
+      <div class="stat"><b id="sMastered">0</b><span>已掌握</span></div>
+      <div class="stat"><b id="sDue">0</b><span>待练</span></div>
+      <div class="stat"><b id="sStreak">0</b><span>连对</span></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-panel="spell">✍ 拼写</button>
+      <button class="tab" data-panel="flash">🃏 翻卡</button>
+      <button class="tab" data-panel="bank">📋 词库</button>
+      <button class="tab" data-panel="settings">⚙ 设置</button>
+    </div>
+
+    <div class="filters" id="filters"></div>
+
+    <!-- SPELL -->
+    <section id="spell" class="panel active">
+      <div class="session-bar"><i id="sessBar"></i></div>
+      <div class="progress-mini">
+        <span id="sessText">本轮 0 / 0</span>
+        <span id="sessScore">对 0 · 错 0</span>
+      </div>
+      <div class="card" id="spellCard">
+        <div class="prompt-meta" id="spellPos">—</div>
+        <div class="prompt-zh" id="spellZh">加载中…</div>
+        <div class="prompt-ipa" id="spellIpa"></div>
+        <div class="hint-line" id="spellHint"></div>
+        <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="在此输入英文拼写…" />
+        <div class="actions">
+          <button class="btn primary" id="btnCheck">检查 ↩</button>
+          <button class="btn ghost" id="btnHint">提示</button>
+          <button class="btn ghost" id="btnSpeak">🔊 读音</button>
+          <button class="btn ghost" id="btnSkip">跳过</button>
+        </div>
+        <div class="feedback" id="spellFb"></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn good" id="btnStart">开始 / 下一轮</button>
+        <button class="btn ghost" id="btnHardOnly">只练错词</button>
+      </div>
+    </section>
+
+    <!-- FLASH -->
+    <section id="flash" class="panel">
+      <div class="card" id="flashCard" style="cursor:pointer">
+        <div class="progress-mini">
+          <span id="flashCount">0 / 0</span>
+          <span style="color:var(--muted);font-size:0.8rem">点击卡片翻转</span>
+        </div>
+        <div class="flash-front" id="flashFront">
+          <div class="flash-en" id="flashEn">—</div>
+          <div class="prompt-ipa" id="flashIpa" style="text-align:center"></div>
+        </div>
+        <div class="flash-back" id="flashBack">
+          <div class="prompt-zh" style="text-align:center" id="flashZh"></div>
+          <div class="prompt-meta" style="text-align:center" id="flashPos"></div>
+          <div class="example" style="text-align:center" id="flashEx"></div>
+        </div>
+        <div class="actions" style="justify-content:center;margin-top:20px">
+          <button class="btn ghost" id="btnFlashSpeak">🔊</button>
+          <button class="btn" id="btnFlashAgain" style="border-color:var(--bad);color:var(--bad)">不熟</button>
+          <button class="btn good" id="btnFlashKnow">认识</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANK -->
+    <section id="bank" class="panel">
+      <div class="actions" style="margin-bottom:10px">
+        <button class="btn ghost" id="btnExport">导出 JSON</button>
+      </div>
+      <div class="bank-list" id="bankList"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="panel">
+      <div class="help">
+        <p style="margin:0 0 8px"><b>手机安装成「软件」</b></p>
+        <ul style="margin:0;padding-left:1.2em">
+          <li><b>iPhone</b>：必须用 Safari 打开网站 → 分享 → 添加到主屏幕</li>
+          <li><b>安卓 Chrome</b>：菜单里「安装应用」或「添加到主屏幕」；也可点顶部「安装到桌面」</li>
+          <li>装好后从桌面图标打开，全屏，像独立 App</li>
+          <li>无自有域名：使用 GitHub Pages 免费地址即可</li>
+        </ul>
+        <p style="margin:12px 0 8px"><b>线上地址</b></p>
+        <p style="margin:0" id="onlineUrl">部署后显示在这里；也可直接看当前地址栏。</p>
+        <p style="margin:12px 0 8px"><b>怎么用</b></p>
+        <ul style="margin:0;padding-left:1.2em">
+          <li>拼写：看中文 → 输入英文 → 回车检查</li>
+          <li>读音：系统英语语音</li>
+          <li>进度存在本机浏览器（手机与电脑默认不同步）</li>
+          <li>联网装好后，多数情况可离线继续刷已缓存的词库</li>
+        </ul>
+        <p style="margin:12px 0 8px"><b>词库</b></p>
+        <ul style="margin:0;padding-left:1.2em">
+          <li>默认：<code>words.js</code>（来自笔记 Day1）</li>
+          <li>新词：同步笔记进 <code>words.js</code> 后重新部署，或下方 JSON 导入</li>
+        </ul>
+        <p style="margin:12px 0 8px"><b>电脑本地副本</b></p>
+        <p style="margin:0"><code>/Users/tom/Documents/雅思备考/02-词汇/vocab-trainer/</code></p>
+      </div>
+
+      <label style="display:block;margin:14px 0 6px;color:var(--muted);font-size:0.85rem">导入单词 JSON 数组（合并进本地自定义词库）</label>
+      <textarea id="importBox" placeholder='[{"en":"example","ipa":"/ɪɡˈzɑːmpl/","pos":"n.","zh":"例子","example":"...","tags":["custom"],"star":true}]'></textarea>
+      <div class="actions">
+        <button class="btn primary" id="btnImport">合并导入</button>
+        <button class="btn" style="border-color:var(--warn);color:var(--warn)" id="btnResetProgress">清空练习进度</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="words.js"></script>
+  <script>
+    const STORAGE = "ielts_vocab_progress_v1";
+    const CUSTOM_KEY = "ielts_vocab_custom_v1";
+
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
+      catch { return {}; }
+    }
+    function saveProgress(p) { localStorage.setItem(STORAGE, JSON.stringify(p)); }
+    function loadCustom() {
+      try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); }
+      catch { return []; }
+    }
+    function saveCustom(arr) { localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr)); }
+
+    let progress = loadProgress(); // { [en]: { right, wrong, mastered, last } }
+    let filter = "all"; // all | star | day1 | hard | mastered
+    let hardOnlySession = false;
+
+    function allWords() {
+      const base = Array.isArray(window.VOCAB_BANK) ? window.VOCAB_BANK : [];
+      const custom = loadCustom();
+      const map = new Map();
+      [...base, ...custom].forEach(w => {
+        if (!w || !w.en) return;
+        map.set(normKey(w.en), { ...w, en: w.en.trim() });
+      });
+      return [...map.values()];
+    }
+
+    function normKey(s) {
+      return String(s).trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function getProg(en) {
+      const k = normKey(en);
+      if (!progress[k]) progress[k] = { right: 0, wrong: 0, mastered: false, last: null };
+      return progress[k];
+    }
+
+    function filteredWords() {
+      let list = allWords();
+      if (filter === "star") list = list.filter(w => w.star);
+      if (filter === "day1") list = list.filter(w => (w.tags || []).includes("day1"));
+      if (filter === "core") list = list.filter(w => (w.tags || []).includes("core"));
+      if (filter === "mastered") list = list.filter(w => getProg(w.en).mastered);
+      if (filter === "hard" || hardOnlySession) {
+        list = list.filter(w => {
+          const p = getProg(w.en);
+          return p.wrong > p.right || (!p.mastered && p.wrong > 0);
+        });
+        if (!list.length && hardOnlySession) list = allWords().filter(w => !getProg(w.en).mastered);
+      }
+      return list;
+    }
+
+    function updateStats() {
+      const all = allWords();
+      const mastered = all.filter(w => getProg(w.en).mastered).length;
+      document.getElementById("sTotal").textContent = all.length;
+      document.getElementById("sMastered").textContent = mastered;
+      document.getElementById("sDue").textContent = all.length - mastered;
+      document.getElementById("sStreak").textContent = spell.streak;
+    }
+
+    // —— filters UI ——
+    const FILTERS = [
+      { id: "all", label: "全部" },
+      { id: "core", label: "核心6词" },
+      { id: "star", label: "★重点" },
+      { id: "day1", label: "Day1" },
+      { id: "hard", label: "易错" },
+      { id: "mastered", label: "已掌握" },
+    ];
+    function renderFilters() {
+      const el = document.getElementById("filters");
+      el.innerHTML = "";
+      FILTERS.forEach(f => {
+        const b = document.createElement("button");
+        b.className = "chip" + (filter === f.id ? " on" : "");
+        b.textContent = f.label;
+        b.onclick = () => {
+          filter = f.id;
+          hardOnlySession = false;
+          renderFilters();
+          startSpellRound();
+          renderBank();
+          prepareFlash();
+        };
+        el.appendChild(b);
+      });
+    }
+
+    // —— tabs ——
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.panel).classList.add("active");
+        if (tab.dataset.panel === "bank") renderBank();
+      });
+    });
+
+    // —— speech ——
+    function speak(text) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-GB";
+      u.rate = 0.9;
+      const voices = speechSynthesis.getVoices();
+      const gb = voices.find(v => /en-GB/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
+      if (gb) u.voice = gb;
+      speechSynthesis.speak(u);
+    }
+    speechSynthesis.onvoiceschanged = () => {};
+
+    // —— SPELL MODE ——
+    const spell = {
+      queue: [],
+      index: 0,
+      right: 0,
+      wrong: 0,
+      streak: 0,
+      revealed: false,
+      hintLevel: 0,
+    };
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startSpellRound() {
+      let list = filteredWords();
+      if (filter !== "mastered") list = list.filter(w => !getProg(w.en).mastered || filter === "all" || filter === "hard" || filter === "day1" || filter === "core" || filter === "star");
+      // default practice: prefer non-mastered, but if filter is all include mix
+      if (filter === "all" && !hardOnlySession) {
+        const weak = list.filter(w => !getProg(w.en).mastered);
+        list = weak.length ? weak : list;
+      }
+      spell.queue = shuffle(list);
+      spell.index = 0;
+      spell.right = 0;
+      spell.wrong = 0;
+      spell.hintLevel = 0;
+      spell.revealed = false;
+      showSpellCard();
+      updateStats();
+    }
+
+    function currentWord() {
+      return spell.queue[spell.index] || null;
+    }
+
+    function showSpellCard() {
+      const w = currentWord();
+      const fb = document.getElementById("spellFb");
+      const input = document.getElementById("answer");
+      fb.className = "feedback";
+      fb.innerHTML = "";
+      input.value = "";
+      input.className = "";
+      spell.hintLevel = 0;
+      spell.revealed = false;
+      document.getElementById("spellHint").textContent = "";
+
+      const total = spell.queue.length || 1;
+      const done = Math.min(spell.index, spell.queue.length);
+      document.getElementById("sessText").textContent = `本轮 ${done} / ${spell.queue.length}`;
+      document.getElementById("sessScore").textContent = `对 ${spell.right} · 错 ${spell.wrong}`;
+      document.getElementById("sessBar").style.width = (spell.queue.length ? (done / total) * 100 : 0) + "%";
+
+      if (!w) {
+        document.getElementById("spellPos").textContent = "完成";
+        document.getElementById("spellZh").textContent = spell.queue.length ? "本轮刷完了 🎉" : "当前筛选下没有单词";
+        document.getElementById("spellIpa").textContent = "";
+        input.disabled = true;
+        return;
+      }
+      input.disabled = false;
+      document.getElementById("spellPos").textContent = (w.pos || "") + (w.star ? "  ·  ★重点" : "");
+      document.getElementById("spellZh").textContent = w.zh || "";
+      document.getElementById("spellIpa").textContent = w.ipa || "";
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function makeHint(en, level) {
+      const chars = en.split("");
+      // level 1: length + first letter; level 2: more letters
+      return chars.map((ch, i) => {
+        if (ch === " ") return " ";
+        if (level >= 1 && i === 0) return ch;
+        if (level >= 2 && (i % 3 === 0)) return ch;
+        if (level >= 3) return ch;
+        return "_";
+      }).join("");
+    }
+
+    function checkAnswer() {
+      const w = currentWord();
+      if (!w || spell.revealed) {
+        if (spell.revealed) nextSpell();
+        return;
+      }
+      const input = document.getElementById("answer");
+      const user = normKey(input.value);
+      const answer = normKey(w.en);
+      const fb = document.getElementById("spellFb");
+      const p = getProg(w.en);
+
+      if (!user) return;
+
+      if (user === answer) {
+        input.className = "ok";
+        p.right += 1;
+        p.last = Date.now();
+        if (p.right >= 2 && p.right > p.wrong) p.mastered = true;
+        spell.right += 1;
+        spell.streak += 1;
+        spell.revealed = true;
+        fb.className = "feedback show ok";
+        fb.innerHTML = `✓ 正确！<div class="ans">${w.en} ${w.ipa || ""}</div><div class="example">${w.example || ""}</div>`;
+        speak(w.en);
+      } else {
+        input.className = "bad";
+        p.wrong += 1;
+        p.mastered = false;
+        p.last = Date.now();
+        spell.wrong += 1;
+        spell.streak = 0;
+        spell.revealed = true;
+        fb.className = "feedback show bad";
+        fb.innerHTML = `✗ 不对<div class="ans">答案：${w.en} ${w.ipa || ""}</div><div class="example">你写的：${input.value}</div><div class="example">${w.example || ""}</div>`;
+        // put back later in queue for retry
+        if (spell.index < spell.queue.length - 1) {
+          const retry = spell.queue[spell.index];
+          spell.queue.push(retry);
+        }
+      }
+      saveProgress(progress);
+      updateStats();
+      document.getElementById("sessScore").textContent = `对 ${spell.right} · 错 ${spell.wrong}`;
+      document.getElementById("sStreak").textContent = spell.streak;
+    }
+
+    function nextSpell() {
+      spell.index += 1;
+      showSpellCard();
+    }
+
+    document.getElementById("btnCheck").onclick = checkAnswer;
+    document.getElementById("answer").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (spell.revealed) nextSpell();
+        else checkAnswer();
+      }
+    });
+    document.getElementById("btnHint").onclick = () => {
+      const w = currentWord();
+      if (!w) return;
+      spell.hintLevel = Math.min(3, spell.hintLevel + 1);
+      document.getElementById("spellHint").textContent = makeHint(w.en, spell.hintLevel);
+    };
+    document.getElementById("btnSpeak").onclick = () => {
+      const w = currentWord();
+      if (w) speak(w.en);
+    };
+    document.getElementById("btnSkip").onclick = () => {
+      const w = currentWord();
+      if (!w) return;
+      if (!spell.revealed) {
+        const p = getProg(w.en);
+        p.wrong += 1;
+        p.mastered = false;
+        saveProgress(progress);
+        spell.wrong += 1;
+        spell.streak = 0;
+      }
+      nextSpell();
+      updateStats();
+    };
+    document.getElementById("btnStart").onclick = () => {
+      hardOnlySession = false;
+      startSpellRound();
+    };
+    document.getElementById("btnHardOnly").onclick = () => {
+      hardOnlySession = true;
+      filter = "hard";
+      renderFilters();
+      startSpellRound();
+    };
+
+    // —— FLASH ——
+    let flashQueue = [];
+    let flashIndex = 0;
+    let flashFlipped = false;
+
+    function prepareFlash() {
+      flashQueue = shuffle(filteredWords());
+      flashIndex = 0;
+      flashFlipped = false;
+      showFlash();
+    }
+    function showFlash() {
+      const w = flashQueue[flashIndex];
+      document.getElementById("flashCount").textContent = flashQueue.length
+        ? `${flashIndex + 1} / ${flashQueue.length}` : "0 / 0";
+      document.getElementById("flashFront").classList.remove("hide");
+      document.getElementById("flashBack").classList.remove("show");
+      flashFlipped = false;
+      if (!w) {
+        document.getElementById("flashEn").textContent = "没有单词";
+        document.getElementById("flashIpa").textContent = "";
+        return;
+      }
+      document.getElementById("flashEn").textContent = w.en;
+      document.getElementById("flashIpa").textContent = w.ipa || "";
+      document.getElementById("flashZh").textContent = w.zh || "";
+      document.getElementById("flashPos").textContent = w.pos || "";
+      document.getElementById("flashEx").textContent = w.example || "";
+    }
+    document.getElementById("flashCard").addEventListener("click", e => {
+      if (e.target.closest("button")) return;
+      flashFlipped = !flashFlipped;
+      document.getElementById("flashFront").classList.toggle("hide", flashFlipped);
+      document.getElementById("flashBack").classList.toggle("show", flashFlipped);
+    });
+    document.getElementById("btnFlashSpeak").onclick = e => {
+      e.stopPropagation();
+      const w = flashQueue[flashIndex];
+      if (w) speak(w.en);
+    };
+    document.getElementById("btnFlashKnow").onclick = e => {
+      e.stopPropagation();
+      const w = flashQueue[flashIndex];
+      if (!w) return;
+      const p = getProg(w.en);
+      p.right += 1;
+      if (p.right >= 2 && p.right > p.wrong) p.mastered = true;
+      p.last = Date.now();
+      saveProgress(progress);
+      flashIndex = (flashIndex + 1) % Math.max(flashQueue.length, 1);
+      showFlash();
+      updateStats();
+    };
+    document.getElementById("btnFlashAgain").onclick = e => {
+      e.stopPropagation();
+      const w = flashQueue[flashIndex];
+      if (!w) return;
+      const p = getProg(w.en);
+      p.wrong += 1;
+      p.mastered = false;
+      p.last = Date.now();
+      saveProgress(progress);
+      flashIndex = (flashIndex + 1) % Math.max(flashQueue.length, 1);
+      showFlash();
+      updateStats();
+    };
+
+    // —— BANK ——
+    function renderBank() {
+      const list = filteredWords().sort((a, b) => a.en.localeCompare(b.en));
+      const el = document.getElementById("bankList");
+      el.innerHTML = list.map(w => {
+        const p = getProg(w.en);
+        return `<div class="bank-item ${p.mastered ? "mastered" : ""}">
+          <div class="en">${w.en} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${w.ipa || ""}</span></div>
+          <div class="tag">${p.mastered ? "已掌握" : `对${p.right}/错${p.wrong}`}</div>
+          <div class="zh">${w.pos || ""} · ${w.zh || ""}</div>
+        </div>`;
+      }).join("") || `<div class="bank-item"><div class="zh">暂无单词</div></div>`;
+    }
+
+    document.getElementById("btnExport").onclick = () => {
+      const data = allWords();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "vocab-bank-export.json";
+      a.click();
+    };
+
+    document.getElementById("btnImport").onclick = () => {
+      try {
+        const arr = JSON.parse(document.getElementById("importBox").value);
+        if (!Array.isArray(arr)) throw new Error("需要 JSON 数组");
+        const custom = loadCustom();
+        const map = new Map(custom.map(w => [normKey(w.en), w]));
+        arr.forEach(w => {
+          if (w && w.en) map.set(normKey(w.en), w);
+        });
+        saveCustom([...map.values()]);
+        alert(`已合并导入，自定义词库共 ${map.size} 条（与 words.js 合并显示）`);
+        startSpellRound();
+        renderBank();
+        updateStats();
+      } catch (e) {
+        alert("导入失败：" + e.message);
+      }
+    };
+
+    document.getElementById("btnResetProgress").onclick = () => {
+      if (!confirm("确定清空所有对错/掌握进度？词库本身不会删。")) return;
+      progress = {};
+      saveProgress(progress);
+      updateStats();
+      renderBank();
+      startSpellRound();
+    };
+
+    // —— PWA install + service worker ——
+    const onlineEl = document.getElementById("onlineUrl");
+    if (onlineEl) {
+      onlineEl.innerHTML = location.protocol.startsWith("http")
+        ? `<a href="${location.href}" style="color:var(--accent)">${location.href}</a>`
+        : "本地文件模式；部署到 GitHub Pages 后这里会显示公网链接。";
+    }
+
+    let deferredPrompt = null;
+    const banner = document.getElementById("installBanner");
+    const btnInstall = document.getElementById("btnInstall");
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    const dismissed = localStorage.getItem("ielts_vocab_install_dismissed") === "1";
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    if (!isStandalone && !dismissed && location.protocol.startsWith("http")) {
+      banner.classList.add("show");
+      if (isIos) {
+        document.getElementById("installIosHint").style.display = "block";
+      }
+    }
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!isStandalone && !dismissed) {
+        banner.classList.add("show");
+        btnInstall.style.display = "inline-block";
+      }
+    });
+
+    btnInstall.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      btnInstall.style.display = "none";
+    });
+
+    document.getElementById("btnShowIos").addEventListener("click", () => {
+      document.getElementById("installIosHint").style.display = "block";
+      if (!isIos) {
+        alert("若是 iPhone：请用 Safari 打开本网站（不要用微信内置浏览器），然后点底部分享 → 添加到主屏幕。");
+      }
+    });
+
+    document.getElementById("btnDismissInstall").addEventListener("click", () => {
+      localStorage.setItem("ielts_vocab_install_dismissed", "1");
+      banner.classList.remove("show");
+    });
+
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("./sw.js").catch((err) => {
+        console.warn("SW register failed", err);
+      });
+    }
+
+    // init
+    renderFilters();
+    startSpellRound();
+    prepareFlash();
+    updateStats();
+  </script>
+</body>
+</html>
