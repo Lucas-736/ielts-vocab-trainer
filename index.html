@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0e1218" />
-  <meta name="description" content="雅思笔记词库拼写练习，可安装到手机主屏幕" />
+  <meta name="description" content="雅思笔记词库：先认读再拼写，自动统计薄弱词" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="雅思刷词" />
@@ -26,6 +26,7 @@
       --bad: #f07178;
       --gold: #e8c468;
       --warn: #e0a458;
+      --purple: #a78bfa;
     }
     * { box-sizing: border-box; }
     body {
@@ -35,34 +36,35 @@
       color: var(--text);
       min-height: 100vh;
       line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
     }
-    .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 64px; }
-    header h1 { font-size: 1.35rem; margin: 0 0 4px; }
-    header p { margin: 0 0 16px; color: var(--muted); font-size: 0.88rem; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 16px 14px 72px; }
+    header h1 { font-size: 1.3rem; margin: 0 0 4px; }
+    header p { margin: 0 0 12px; color: var(--muted); font-size: 0.86rem; }
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .stat {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 10px 8px;
+      padding: 10px 6px;
       text-align: center;
     }
-    .stat b { display: block; font-size: 1.15rem; color: var(--good); }
-    .stat span { font-size: 0.7rem; color: var(--muted); }
+    .stat b { display: block; font-size: 1.1rem; color: var(--good); }
+    .stat span { font-size: 0.68rem; color: var(--muted); }
     .tabs {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
     }
     .tab, .chip, button.btn {
       border: 1px solid var(--line);
       background: var(--card);
       color: var(--text);
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 9px 14px;
       font-size: 0.86rem;
       cursor: pointer;
     }
@@ -71,46 +73,69 @@
       border-color: transparent;
       font-weight: 600;
     }
-    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-    .chip { padding: 6px 12px; font-size: 0.8rem; }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip { padding: 6px 11px; font-size: 0.78rem; }
     .panel { display: none; }
     .panel.active { display: block; }
     .card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 18px;
-      padding: 22px 18px;
-      min-height: 280px;
+      padding: 20px 16px;
+      min-height: 300px;
+    }
+    .stage-pill {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 650;
+      padding: 4px 10px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+    .stage-pill.teach { background: rgba(167,139,250,0.18); color: var(--purple); }
+    .stage-pill.read { background: rgba(91,159,212,0.18); color: var(--accent); }
+    .stage-pill.spell { background: rgba(232,196,104,0.16); color: var(--gold); }
+    .stage-pill.done { background: rgba(62,207,142,0.15); color: var(--good); }
+    .en-big {
+      font-size: 1.7rem;
+      font-weight: 750;
+      line-height: 1.25;
+      margin: 8px 0 6px;
+      word-break: break-word;
     }
     .prompt-zh {
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 650;
       margin: 8px 0 6px;
       line-height: 1.35;
     }
-    .prompt-meta {
-      color: var(--muted);
-      font-size: 0.88rem;
-      margin-bottom: 6px;
-    }
+    .prompt-meta { color: var(--muted); font-size: 0.86rem; margin-bottom: 4px; }
     .prompt-ipa {
       color: var(--gold);
-      font-size: 1rem;
-      margin-bottom: 14px;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
       letter-spacing: 0.02em;
+    }
+    .example {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: var(--card2);
+      border-radius: 10px;
     }
     .hint-line {
       font-size: 0.9rem;
       color: var(--muted);
       min-height: 1.4em;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       letter-spacing: 0.12em;
     }
     input#answer {
       width: 100%;
-      font-size: 1.15rem;
-      padding: 14px 14px;
+      font-size: 1.12rem;
+      padding: 14px;
       border-radius: 12px;
       border: 1px solid var(--line);
       background: var(--card2);
@@ -120,19 +145,14 @@
     input#answer:focus { border-color: var(--accent); }
     input#answer.ok { border-color: var(--good); background: rgba(62,207,142,0.08); }
     input#answer.bad { border-color: var(--bad); background: rgba(240,113,120,0.08); }
-    .actions {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
-    }
-    .btn.primary {
-      background: var(--accent);
-      border-color: transparent;
-      color: #fff;
-      font-weight: 650;
-    }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .btn.primary { background: var(--accent); border-color: transparent; color: #fff; font-weight: 650; }
     .btn.good { background: rgba(62,207,142,0.15); border-color: var(--good); color: var(--good); }
+    .btn.bad { background: rgba(240,113,120,0.12); border-color: var(--bad); color: var(--bad); }
     .btn.ghost { background: var(--card2); }
+    .btn.wide { flex: 1; min-width: 120px; text-align: center; padding: 12px 14px; }
     .feedback {
-      margin-top: 14px;
+      margin-top: 12px;
       padding: 12px 14px;
       border-radius: 12px;
       font-size: 0.92rem;
@@ -142,25 +162,36 @@
     .feedback.ok { background: rgba(62,207,142,0.12); color: var(--good); }
     .feedback.bad { background: rgba(240,113,120,0.12); color: #ffb4b8; }
     .feedback .ans { color: var(--text); font-weight: 650; margin-top: 4px; }
-    .example { color: var(--muted); font-size: 0.85rem; margin-top: 8px; }
     .progress-mini {
       color: var(--muted);
       font-size: 0.8rem;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
+      gap: 8px;
     }
-    .flash-en {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin: 20px 0 8px;
-      text-align: center;
+    .session-bar {
+      height: 6px;
+      background: var(--card2);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 10px;
     }
-    .flash-back { display: none; text-align: center; }
-    .flash-back.show { display: block; }
-    .flash-front.hide { display: none; }
-    .bank-list {
-      max-height: 420px;
+    .session-bar i {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--purple), var(--accent), var(--good));
+      transition: width 0.25s;
+    }
+    .flow-tip {
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--card2);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+    .bank-list, .weak-list {
+      max-height: 460px;
       overflow: auto;
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -170,57 +201,40 @@
       border-bottom: 1px solid var(--line);
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 4px 12px;
+      gap: 3px 10px;
       font-size: 0.9rem;
     }
     .bank-item:last-child { border-bottom: 0; }
     .bank-item .en { font-weight: 650; }
-    .bank-item .zh { color: var(--muted); font-size: 0.82rem; grid-column: 1 / -1; }
-    .bank-item .tag {
-      font-size: 0.72rem;
-      color: var(--accent);
-      align-self: start;
-    }
+    .bank-item .zh { color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1; }
+    .bank-item .tag { font-size: 0.72rem; color: var(--accent); text-align: right; }
     .bank-item.mastered .en { color: var(--good); }
-    textarea#importBox {
-      width: 100%;
-      min-height: 120px;
+    .bank-item.weak .en { color: var(--bad); }
+    .meters {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; grid-column: 1 / -1;
+    }
+    .meter {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 99px;
       background: var(--card2);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      color: var(--text);
-      padding: 12px;
-      font-family: ui-monospace, Menlo, monospace;
-      font-size: 0.8rem;
-      margin: 10px 0;
+      color: var(--muted);
+    }
+    .meter.bad { color: var(--bad); background: rgba(240,113,120,0.12); }
+    .meter.ok { color: var(--good); background: rgba(62,207,142,0.12); }
+    textarea#importBox {
+      width: 100%; min-height: 110px;
+      background: var(--card2); border: 1px solid var(--line);
+      border-radius: 12px; color: var(--text); padding: 12px;
+      font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; margin: 10px 0;
     }
     .help {
-      color: var(--muted);
-      font-size: 0.85rem;
-      background: var(--card);
-      border: 1px dashed var(--line);
-      border-radius: 12px;
-      padding: 12px 14px;
+      color: var(--muted); font-size: 0.85rem;
+      background: var(--card); border: 1px dashed var(--line);
+      border-radius: 12px; padding: 12px 14px;
     }
     .help code {
-      background: var(--card2);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
-    .session-bar {
-      height: 6px;
-      background: var(--card2);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .session-bar i {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--good), var(--accent));
-      transition: width 0.25s;
+      background: var(--card2); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem;
     }
     .install-banner {
       display: none;
@@ -228,7 +242,7 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 12px 14px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       font-size: 0.88rem;
     }
     .install-banner.show { display: block; }
@@ -237,25 +251,24 @@
       display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;
     }
     .install-banner .close {
-      margin-left: auto;
-      background: transparent;
-      border: 0;
-      color: var(--muted);
-      font-size: 0.85rem;
-      cursor: pointer;
+      margin-left: auto; background: transparent; border: 0;
+      color: var(--muted); font-size: 0.85rem; cursor: pointer;
     }
     @media (display-mode: standalone) {
       .install-banner { display: none !important; }
     }
+    .empty {
+      text-align: center; color: var(--muted); padding: 40px 12px;
+    }
+    .empty h3 { color: var(--text); margin: 0 0 8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="install-banner" id="installBanner">
-      <div><b>装到手机主屏幕</b>，像 App 一样点开用（免费 GitHub 域名，无需自己买域名）</div>
+      <div><b>装到手机主屏幕</b>，像 App 一样用</div>
       <div id="installIosHint" style="display:none;margin-top:8px;color:var(--muted)">
-        iPhone：用 <b style="color:var(--text)">Safari</b> 打开本页 → 点底部分享
-        <span style="color:var(--accent)">□↑</span> → <b style="color:var(--text)">添加到主屏幕</b>
+        iPhone：Safari 打开 → 分享 → <b style="color:var(--text)">添加到主屏幕</b>
       </div>
       <div class="row">
         <button class="btn primary" id="btnInstall" style="display:none">安装到桌面</button>
@@ -266,80 +279,65 @@
 
     <header>
       <h1>📚 雅思词库 · 刷词</h1>
-      <p>词库来自你的笔记 · 拼写练习 · 可离线 · 可装主屏幕</p>
+      <p>先认读 → 再拼写 · 自动统计薄弱词 · 优先练错词</p>
     </header>
 
     <div class="stats">
       <div class="stat"><b id="sTotal">0</b><span>词库</span></div>
+      <div class="stat"><b id="sNew">0</b><span>未认读</span></div>
+      <div class="stat"><b id="sWeak">0</b><span>薄弱</span></div>
       <div class="stat"><b id="sMastered">0</b><span>已掌握</span></div>
-      <div class="stat"><b id="sDue">0</b><span>待练</span></div>
-      <div class="stat"><b id="sStreak">0</b><span>连对</span></div>
     </div>
 
     <div class="tabs">
-      <button class="tab active" data-panel="spell">✍ 拼写</button>
-      <button class="tab" data-panel="flash">🃏 翻卡</button>
+      <button class="tab active" data-panel="learn">🧠 学习</button>
+      <button class="tab" data-panel="weak">📉 薄弱</button>
       <button class="tab" data-panel="bank">📋 词库</button>
       <button class="tab" data-panel="settings">⚙ 设置</button>
     </div>
 
     <div class="filters" id="filters"></div>
 
-    <!-- SPELL -->
-    <section id="spell" class="panel active">
+    <!-- LEARN -->
+    <section id="learn" class="panel active">
+      <div class="flow-tip" id="flowTip">
+        智能路径：新词先认读教学 → 认读自测 → 拼写。错得多的词会更常出现。
+      </div>
       <div class="session-bar"><i id="sessBar"></i></div>
       <div class="progress-mini">
-        <span id="sessText">本轮 0 / 0</span>
-        <span id="sessScore">对 0 · 错 0</span>
+        <span id="sessText">准备中</span>
+        <span id="sessScore">认对0 认错0 · 拼对0 拼错0</span>
       </div>
-      <div class="card" id="spellCard">
-        <div class="prompt-meta" id="spellPos">—</div>
-        <div class="prompt-zh" id="spellZh">加载中…</div>
-        <div class="prompt-ipa" id="spellIpa"></div>
-        <div class="hint-line" id="spellHint"></div>
-        <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="在此输入英文拼写…" />
-        <div class="actions">
-          <button class="btn primary" id="btnCheck">检查 ↩</button>
-          <button class="btn ghost" id="btnHint">提示</button>
-          <button class="btn ghost" id="btnSpeak">🔊 读音</button>
-          <button class="btn ghost" id="btnSkip">跳过</button>
+      <div class="card" id="learnCard">
+        <div class="empty" id="learnEmpty" style="display:none">
+          <h3>本轮没有词了</h3>
+          <p>换个筛选，或点「开始一轮」</p>
         </div>
-        <div class="feedback" id="spellFb"></div>
+        <div id="learnBody">
+          <div class="stage-pill teach" id="stagePill">① 认读教学</div>
+          <div class="prompt-meta" id="learnMeta">—</div>
+          <div id="learnMain"></div>
+          <div class="feedback" id="learnFb"></div>
+          <div class="actions" id="learnActions"></div>
+        </div>
       </div>
       <div class="actions" style="margin-top:12px">
-        <button class="btn good" id="btnStart">开始 / 下一轮</button>
-        <button class="btn ghost" id="btnHardOnly">只练错词</button>
+        <button class="btn good" id="btnStartRound">开始一轮</button>
+        <button class="btn ghost" id="btnWeakRound">专练薄弱词</button>
       </div>
     </section>
 
-    <!-- FLASH -->
-    <section id="flash" class="panel">
-      <div class="card" id="flashCard" style="cursor:pointer">
-        <div class="progress-mini">
-          <span id="flashCount">0 / 0</span>
-          <span style="color:var(--muted);font-size:0.8rem">点击卡片翻转</span>
-        </div>
-        <div class="flash-front" id="flashFront">
-          <div class="flash-en" id="flashEn">—</div>
-          <div class="prompt-ipa" id="flashIpa" style="text-align:center"></div>
-        </div>
-        <div class="flash-back" id="flashBack">
-          <div class="prompt-zh" style="text-align:center" id="flashZh"></div>
-          <div class="prompt-meta" style="text-align:center" id="flashPos"></div>
-          <div class="example" style="text-align:center" id="flashEx"></div>
-        </div>
-        <div class="actions" style="justify-content:center;margin-top:20px">
-          <button class="btn ghost" id="btnFlashSpeak">🔊</button>
-          <button class="btn" id="btnFlashAgain" style="border-color:var(--bad);color:var(--bad)">不熟</button>
-          <button class="btn good" id="btnFlashKnow">认识</button>
-        </div>
-      </div>
+    <!-- WEAK -->
+    <section id="weak" class="panel">
+      <div class="flow-tip">按「拼错 + 认错」加权排序。拼错权重更高。点「练这个」进入学习。</div>
+      <div class="weak-list" id="weakList"></div>
     </section>
 
     <!-- BANK -->
     <section id="bank" class="panel">
       <div class="actions" style="margin-bottom:10px">
-        <button class="btn ghost" id="btnExport">导出 JSON</button>
+        <button class="btn ghost" id="btnExport">导出词库 JSON</button>
+        <button class="btn ghost" id="btnExportProgress">导出进度</button>
       </div>
       <div class="bank-list" id="bankList"></div>
     </section>
@@ -347,59 +345,60 @@
     <!-- SETTINGS -->
     <section id="settings" class="panel">
       <div class="help">
-        <p style="margin:0 0 8px"><b>手机安装成「软件」</b></p>
+        <p style="margin:0 0 8px"><b>记忆模式怎么工作</b></p>
         <ul style="margin:0;padding-left:1.2em">
-          <li><b>iPhone</b>：必须用 Safari 打开网站 → 分享 → 添加到主屏幕</li>
-          <li><b>安卓 Chrome</b>：菜单里「安装应用」或「添加到主屏幕」；也可点顶部「安装到桌面」</li>
-          <li>装好后从桌面图标打开，全屏，像独立 App</li>
-          <li>无自有域名：使用 GitHub Pages 免费地址即可</li>
+          <li><b>① 认读教学</b>：展示英文+音标+中文+例句，自动读音（新词必走）</li>
+          <li><b>② 认读自测</b>：只给中文，你点「认识 / 不认识」→ 统计认对/认错</li>
+          <li><b>③ 拼写</b>：看中文写英文 → 统计拼对/拼错</li>
+          <li>错词会插回队列、提高出现权重；掌握后降低出现频率</li>
         </ul>
         <p style="margin:12px 0 8px"><b>线上地址</b></p>
-        <p style="margin:0" id="onlineUrl">部署后显示在这里；也可直接看当前地址栏。</p>
-        <p style="margin:12px 0 8px"><b>怎么用</b></p>
+        <p style="margin:0" id="onlineUrl">—</p>
+        <p style="margin:12px 0 8px"><b>手机安装</b></p>
         <ul style="margin:0;padding-left:1.2em">
-          <li>拼写：看中文 → 输入英文 → 回车检查</li>
-          <li>读音：系统英语语音</li>
-          <li>进度存在本机浏览器（手机与电脑默认不同步）</li>
-          <li>联网装好后，多数情况可离线继续刷已缓存的词库</li>
+          <li>iPhone：Safari → 分享 → 添加到主屏幕</li>
+          <li>安卓：Chrome → 安装应用 / 添加到主屏幕</li>
         </ul>
-        <p style="margin:12px 0 8px"><b>词库</b></p>
-        <ul style="margin:0;padding-left:1.2em">
-          <li>默认：<code>words.js</code>（来自笔记 Day1）</li>
-          <li>新词：同步笔记进 <code>words.js</code> 后重新部署，或下方 JSON 导入</li>
-        </ul>
-        <p style="margin:12px 0 8px"><b>电脑本地副本</b></p>
-        <p style="margin:0"><code>/Users/tom/Documents/雅思备考/02-词汇/vocab-trainer/</code></p>
       </div>
-
-      <label style="display:block;margin:14px 0 6px;color:var(--muted);font-size:0.85rem">导入单词 JSON 数组（合并进本地自定义词库）</label>
-      <textarea id="importBox" placeholder='[{"en":"example","ipa":"/ɪɡˈzɑːmpl/","pos":"n.","zh":"例子","example":"...","tags":["custom"],"star":true}]'></textarea>
+      <label style="display:block;margin:14px 0 6px;color:var(--muted);font-size:0.85rem">导入单词 JSON</label>
+      <textarea id="importBox" placeholder='[{"en":"example","ipa":"/…/","pos":"n.","zh":"例子","example":"…","tags":["custom"],"star":true}]'></textarea>
       <div class="actions">
         <button class="btn primary" id="btnImport">合并导入</button>
-        <button class="btn" style="border-color:var(--warn);color:var(--warn)" id="btnResetProgress">清空练习进度</button>
+        <button class="btn" style="border-color:var(--warn);color:var(--warn)" id="btnResetProgress">清空学习进度</button>
       </div>
     </section>
   </div>
 
   <script src="words.js"></script>
   <script>
-    const STORAGE = "ielts_vocab_progress_v1";
+    const STORAGE = "ielts_vocab_progress_v2";
+    const STORAGE_LEGACY = "ielts_vocab_progress_v1";
     const CUSTOM_KEY = "ielts_vocab_custom_v1";
+    const BATCH = 12; // 每轮最多题量（自适应会插队）
 
     function loadProgress() {
-      try { return JSON.parse(localStorage.getItem(STORAGE) || "{}"); }
-      catch { return {}; }
+      try {
+        let raw = localStorage.getItem(STORAGE);
+        if (!raw) raw = localStorage.getItem(STORAGE_LEGACY);
+        return raw ? JSON.parse(raw) : {};
+      } catch { return {}; }
     }
-    function saveProgress(p) { localStorage.setItem(STORAGE, JSON.stringify(p)); }
+    function saveProgress() {
+      localStorage.setItem(STORAGE, JSON.stringify(progress));
+    }
     function loadCustom() {
       try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); }
       catch { return []; }
     }
     function saveCustom(arr) { localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr)); }
 
-    let progress = loadProgress(); // { [en]: { right, wrong, mastered, last } }
-    let filter = "all"; // all | star | day1 | hard | mastered
-    let hardOnlySession = false;
+    let progress = loadProgress();
+    let filter = "all";
+    let weakOnly = false;
+
+    function normKey(s) {
+      return String(s).trim().toLowerCase().replace(/\s+/g, " ");
+    }
 
     function allWords() {
       const base = Array.isArray(window.VOCAB_BANK) ? window.VOCAB_BANK : [];
@@ -412,14 +411,68 @@
       return [...map.values()];
     }
 
-    function normKey(s) {
-      return String(s).trim().toLowerCase().replace(/\s+/g, " ");
-    }
-
+    /** 进度结构 + 旧数据兼容 */
     function getProg(en) {
       const k = normKey(en);
-      if (!progress[k]) progress[k] = { right: 0, wrong: 0, mastered: false, last: null };
-      return progress[k];
+      if (!progress[k]) {
+        progress[k] = blankProg();
+      }
+      const p = progress[k];
+      // migrate v1
+      if (p.readOk == null) {
+        p.spellOk = p.spellOk ?? p.right ?? 0;
+        p.spellWrong = p.spellWrong ?? p.wrong ?? 0;
+        p.readOk = p.readOk ?? 0;
+        p.readWrong = p.readWrong ?? 0;
+        p.introduced = !!(p.introduced || p.spellOk || p.spellWrong || p.readOk || p.readWrong);
+        p.mastered = !!p.mastered;
+        p.last = p.last ?? null;
+      }
+      return p;
+    }
+
+    function blankProg() {
+      return {
+        introduced: false,
+        readOk: 0,
+        readWrong: 0,
+        spellOk: 0,
+        spellWrong: 0,
+        mastered: false,
+        last: null
+      };
+    }
+
+    /** 越高越优先练 */
+    function weakScore(en) {
+      const p = getProg(en);
+      if (p.mastered) return -100 + p.spellWrong + p.readWrong;
+      let s = 0;
+      if (!p.introduced) s += 50; // 新词优先进入认读
+      s += p.spellWrong * 4;
+      s += p.readWrong * 2.5;
+      s -= p.spellOk * 1.2;
+      s -= p.readOk * 0.8;
+      // 最近错过的再抬一点
+      if (p.last && Date.now() - p.last < 86400000) s += 1;
+      return s;
+    }
+
+    function isWeak(en) {
+      const p = getProg(en);
+      if (p.mastered) return false;
+      return p.spellWrong > 0 || p.readWrong > 0 || (p.spellWrong + p.readWrong) > (p.spellOk + p.readOk);
+    }
+
+    function recomputeMastered(en) {
+      const p = getProg(en);
+      // 认读与拼写都要有稳定正确
+      p.mastered =
+        p.introduced &&
+        p.spellOk >= 2 &&
+        p.readOk >= 1 &&
+        p.spellOk > p.spellWrong &&
+        p.readOk >= p.readWrong;
     }
 
     function filteredWords() {
@@ -428,32 +481,30 @@
       if (filter === "day1") list = list.filter(w => (w.tags || []).includes("day1"));
       if (filter === "core") list = list.filter(w => (w.tags || []).includes("core"));
       if (filter === "mastered") list = list.filter(w => getProg(w.en).mastered);
-      if (filter === "hard" || hardOnlySession) {
-        list = list.filter(w => {
-          const p = getProg(w.en);
-          return p.wrong > p.right || (!p.mastered && p.wrong > 0);
-        });
-        if (!list.length && hardOnlySession) list = allWords().filter(w => !getProg(w.en).mastered);
-      }
+      if (filter === "new") list = list.filter(w => !getProg(w.en).introduced);
+      if (filter === "hard" || weakOnly) list = list.filter(w => isWeak(w.en) || !getProg(w.en).introduced);
       return list;
     }
 
     function updateStats() {
       const all = allWords();
-      const mastered = all.filter(w => getProg(w.en).mastered).length;
+      const nNew = all.filter(w => !getProg(w.en).introduced).length;
+      const nWeak = all.filter(w => isWeak(w.en)).length;
+      const nMastered = all.filter(w => getProg(w.en).mastered).length;
       document.getElementById("sTotal").textContent = all.length;
-      document.getElementById("sMastered").textContent = mastered;
-      document.getElementById("sDue").textContent = all.length - mastered;
-      document.getElementById("sStreak").textContent = spell.streak;
+      document.getElementById("sNew").textContent = nNew;
+      document.getElementById("sWeak").textContent = nWeak;
+      document.getElementById("sMastered").textContent = nMastered;
     }
 
-    // —— filters UI ——
+    // —— filters ——
     const FILTERS = [
       { id: "all", label: "全部" },
+      { id: "new", label: "未认读" },
       { id: "core", label: "核心6词" },
       { id: "star", label: "★重点" },
       { id: "day1", label: "Day1" },
-      { id: "hard", label: "易错" },
+      { id: "hard", label: "薄弱" },
       { id: "mastered", label: "已掌握" },
     ];
     function renderFilters() {
@@ -465,48 +516,49 @@
         b.textContent = f.label;
         b.onclick = () => {
           filter = f.id;
-          hardOnlySession = false;
+          weakOnly = false;
           renderFilters();
-          startSpellRound();
+          startRound();
+          renderWeak();
           renderBank();
-          prepareFlash();
         };
         el.appendChild(b);
       });
     }
 
-    // —— tabs ——
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById(tab.dataset.panel).classList.add("active");
+        if (tab.dataset.panel === "weak") renderWeak();
         if (tab.dataset.panel === "bank") renderBank();
       });
     });
 
-    // —— speech ——
     function speak(text) {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "en-GB";
-      u.rate = 0.9;
+      u.rate = 0.88;
       const voices = speechSynthesis.getVoices();
       const gb = voices.find(v => /en-GB/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
       if (gb) u.voice = gb;
       speechSynthesis.speak(u);
     }
-    speechSynthesis.onvoiceschanged = () => {};
+    if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
 
-    // —— SPELL MODE ——
-    const spell = {
+    // —— LEARN ENGINE ——
+    // queue item: { word, mode: 'teach' | 'read' | 'spell' }
+    const session = {
       queue: [],
       index: 0,
-      right: 0,
-      wrong: 0,
-      streak: 0,
+      readOk: 0,
+      readWrong: 0,
+      spellOk: 0,
+      spellWrong: 0,
       revealed: false,
       hintLevel: 0,
     };
@@ -520,256 +572,383 @@
       return a;
     }
 
-    function startSpellRound() {
+    function buildQueue() {
       let list = filteredWords();
-      if (filter !== "mastered") list = list.filter(w => !getProg(w.en).mastered || filter === "all" || filter === "hard" || filter === "day1" || filter === "core" || filter === "star");
-      // default practice: prefer non-mastered, but if filter is all include mix
-      if (filter === "all" && !hardOnlySession) {
-        const weak = list.filter(w => !getProg(w.en).mastered);
-        list = weak.length ? weak : list;
+      if (filter === "mastered") {
+        // 复习掌握词：只做认读自测 + 拼写
+        list = list.slice(0, BATCH);
+      } else if (!weakOnly && filter !== "hard") {
+        // 优先弱词 + 新词
+        list = [...list].sort((a, b) => weakScore(b.en) - weakScore(a.en));
+        list = list.slice(0, BATCH);
+      } else {
+        list = [...list].sort((a, b) => weakScore(b.en) - weakScore(a.en)).slice(0, BATCH);
       }
-      spell.queue = shuffle(list);
-      spell.index = 0;
-      spell.right = 0;
-      spell.wrong = 0;
-      spell.hintLevel = 0;
-      spell.revealed = false;
-      showSpellCard();
+
+      const q = [];
+      list.forEach(w => {
+        const p = getProg(w.en);
+        if (!p.introduced || filter === "new") {
+          q.push({ word: w, mode: "teach" });
+          // 教学后立刻一次认读自测
+          q.push({ word: w, mode: "read" });
+        } else {
+          // 已认读过：薄弱优先认读再拼写；稳定词可直接拼写
+          const needRead = p.readWrong > 0 || p.readOk < 1 || Math.random() < 0.35;
+          if (needRead) q.push({ word: w, mode: "read" });
+          q.push({ word: w, mode: "spell" });
+        }
+      });
+      // 轻微打乱同模式块，但 teach 尽量靠前（新词先学）
+      const teach = q.filter(x => x.mode === "teach");
+      const rest = shuffle(q.filter(x => x.mode !== "teach"));
+      // 已教学过的词：读测与拼写交错
+      return [...teach, ...rest];
+    }
+
+    function startRound() {
+      session.queue = buildQueue();
+      session.index = 0;
+      session.readOk = 0;
+      session.readWrong = 0;
+      session.spellOk = 0;
+      session.spellWrong = 0;
+      session.revealed = false;
+      session.hintLevel = 0;
+      renderCard();
       updateStats();
     }
 
-    function currentWord() {
-      return spell.queue[spell.index] || null;
+    function current() {
+      return session.queue[session.index] || null;
     }
 
-    function showSpellCard() {
-      const w = currentWord();
-      const fb = document.getElementById("spellFb");
-      const input = document.getElementById("answer");
+    function updateSessionHud() {
+      const total = session.queue.length;
+      const done = Math.min(session.index, total);
+      document.getElementById("sessText").textContent = total
+        ? `本轮进度 ${done}/${total}`
+        : "本轮无题目";
+      document.getElementById("sessScore").textContent =
+        `认对${session.readOk} 认错${session.readWrong} · 拼对${session.spellOk} 拼错${session.spellWrong}`;
+      document.getElementById("sessBar").style.width = total ? `${(done / total) * 100}%` : "0%";
+    }
+
+    function renderCard() {
+      updateSessionHud();
+      const item = current();
+      const empty = document.getElementById("learnEmpty");
+      const body = document.getElementById("learnBody");
+      const fb = document.getElementById("learnFb");
       fb.className = "feedback";
       fb.innerHTML = "";
-      input.value = "";
-      input.className = "";
-      spell.hintLevel = 0;
-      spell.revealed = false;
-      document.getElementById("spellHint").textContent = "";
+      session.revealed = false;
+      session.hintLevel = 0;
 
-      const total = spell.queue.length || 1;
-      const done = Math.min(spell.index, spell.queue.length);
-      document.getElementById("sessText").textContent = `本轮 ${done} / ${spell.queue.length}`;
-      document.getElementById("sessScore").textContent = `对 ${spell.right} · 错 ${spell.wrong}`;
-      document.getElementById("sessBar").style.width = (spell.queue.length ? (done / total) * 100 : 0) + "%";
-
-      if (!w) {
-        document.getElementById("spellPos").textContent = "完成";
-        document.getElementById("spellZh").textContent = spell.queue.length ? "本轮刷完了 🎉" : "当前筛选下没有单词";
-        document.getElementById("spellIpa").textContent = "";
-        input.disabled = true;
+      if (!item) {
+        empty.style.display = "block";
+        body.style.display = "none";
+        document.getElementById("flowTip").textContent =
+          session.queue.length
+            ? "本轮完成！可再点「开始一轮」，系统会更偏向你的错词。"
+            : "当前筛选下没有词。换「全部」或「未认读」试试。";
         return;
       }
-      input.disabled = false;
-      document.getElementById("spellPos").textContent = (w.pos || "") + (w.star ? "  ·  ★重点" : "");
-      document.getElementById("spellZh").textContent = w.zh || "";
-      document.getElementById("spellIpa").textContent = w.ipa || "";
-      setTimeout(() => input.focus(), 50);
+      empty.style.display = "none";
+      body.style.display = "block";
+
+      const w = item.word;
+      const pill = document.getElementById("stagePill");
+      const meta = document.getElementById("learnMeta");
+      const main = document.getElementById("learnMain");
+      const actions = document.getElementById("learnActions");
+      const p = getProg(w.en);
+
+      meta.textContent = `${w.pos || ""}${w.star ? " · ★重点" : ""} · 拼错${p.spellWrong} 认错${p.readWrong}`;
+
+      if (item.mode === "teach") {
+        pill.className = "stage-pill teach";
+        pill.textContent = "① 认读教学 · 先跟读";
+        document.getElementById("flowTip").textContent =
+          "先认读：看词、听音、看中文。点「记住了」进入下一步。";
+        main.innerHTML = `
+          <div class="en-big">${escapeHtml(w.en)}</div>
+          <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
+          <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
+          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+        `;
+        actions.innerHTML = `
+          <button class="btn ghost" id="btnSpeakNow">🔊 再听一遍</button>
+          <button class="btn primary wide" id="btnTaught">记住了，下一个</button>
+        `;
+        setTimeout(() => speak(w.en), 200);
+        document.getElementById("btnSpeakNow").onclick = () => speak(w.en);
+        document.getElementById("btnTaught").onclick = () => {
+          const pr = getProg(w.en);
+          pr.introduced = true;
+          pr.last = Date.now();
+          saveProgress();
+          nextItem();
+        };
+      } else if (item.mode === "read") {
+        pill.className = "stage-pill read";
+        pill.textContent = "② 认读自测 · 你认识吗？";
+        document.getElementById("flowTip").textContent =
+          "只看中文：认识就点「认识」，不熟点「不认识」。会分别计入认对/认错。";
+        main.innerHTML = `
+          <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
+          <div class="prompt-meta">想一想英文是什么，再作答</div>
+          <div id="readReveal" style="display:none;margin-top:12px">
+            <div class="en-big">${escapeHtml(w.en)}</div>
+            <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
+            ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          </div>
+        `;
+        actions.innerHTML = `
+          <button class="btn bad wide" id="btnReadNo">不认识</button>
+          <button class="btn good wide" id="btnReadYes">认识</button>
+          <button class="btn ghost" id="btnReadSpeak" style="display:none">🔊 读音</button>
+          <button class="btn primary wide" id="btnReadNext" style="display:none">继续</button>
+        `;
+        document.getElementById("btnReadYes").onclick = () => gradeRead(true);
+        document.getElementById("btnReadNo").onclick = () => gradeRead(false);
+      } else {
+        // spell
+        pill.className = "stage-pill spell";
+        pill.textContent = "③ 拼写练习 · 写出英文";
+        document.getElementById("flowTip").textContent =
+          "根据中文写出英文（大小写不限）。错词会自动记入薄弱并稍后重练。";
+        main.innerHTML = `
+          <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
+          <div class="prompt-ipa" id="spellIpaHint" style="opacity:0.55">${escapeHtml(w.ipa || "（音标提示）")}</div>
+          <div class="hint-line" id="spellHint"></div>
+          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="输入英文拼写…" />
+        `;
+        actions.innerHTML = `
+          <button class="btn primary" id="btnCheck">检查 ↩</button>
+          <button class="btn ghost" id="btnHint">提示</button>
+          <button class="btn ghost" id="btnSpellSpeak">🔊 读音</button>
+          <button class="btn ghost" id="btnSpellSkip">跳过</button>
+        `;
+        const input = document.getElementById("answer");
+        setTimeout(() => input && input.focus(), 80);
+        document.getElementById("btnCheck").onclick = checkSpell;
+        document.getElementById("btnHint").onclick = () => {
+          session.hintLevel = Math.min(3, session.hintLevel + 1);
+          document.getElementById("spellHint").textContent = makeHint(w.en, session.hintLevel);
+        };
+        document.getElementById("btnSpellSpeak").onclick = () => speak(w.en);
+        document.getElementById("btnSpellSkip").onclick = () => {
+          if (!session.revealed) {
+            const pr = getProg(w.en);
+            pr.spellWrong += 1;
+            pr.mastered = false;
+            pr.last = Date.now();
+            session.spellWrong += 1;
+            requeueWrong(item);
+            saveProgress();
+          }
+          nextItem();
+        };
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (session.revealed) nextItem();
+            else checkSpell();
+          }
+        });
+      }
+    }
+
+    function gradeRead(know) {
+      if (session.revealed) return;
+      const item = current();
+      if (!item) return;
+      const w = item.word;
+      const pr = getProg(w.en);
+      pr.introduced = true;
+      pr.last = Date.now();
+      session.revealed = true;
+
+      const reveal = document.getElementById("readReveal");
+      if (reveal) reveal.style.display = "block";
+      document.getElementById("btnReadYes").style.display = "none";
+      document.getElementById("btnReadNo").style.display = "none";
+      document.getElementById("btnReadSpeak").style.display = "inline-block";
+      document.getElementById("btnReadNext").style.display = "inline-block";
+      document.getElementById("btnReadSpeak").onclick = () => speak(w.en);
+      document.getElementById("btnReadNext").onclick = () => nextItem();
+
+      const fb = document.getElementById("learnFb");
+      if (know) {
+        pr.readOk += 1;
+        session.readOk += 1;
+        fb.className = "feedback show ok";
+        fb.innerHTML = `✓ 记为「认识」<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
+        speak(w.en);
+      } else {
+        pr.readWrong += 1;
+        pr.mastered = false;
+        session.readWrong += 1;
+        fb.className = "feedback show bad";
+        fb.innerHTML = `已记「不认识」· 再跟读一遍<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
+        speak(w.en);
+        // 不认识：插回教学 + 再测
+        requeueWrong({ word: w, mode: "teach" });
+        requeueWrong({ word: w, mode: "read" });
+      }
+      recomputeMastered(w.en);
+      saveProgress();
+      updateSessionHud();
+      updateStats();
+    }
+
+    function checkSpell() {
+      const item = current();
+      if (!item || item.mode !== "spell") return;
+      if (session.revealed) {
+        nextItem();
+        return;
+      }
+      const w = item.word;
+      const input = document.getElementById("answer");
+      if (!input) return;
+      const user = normKey(input.value);
+      if (!user) return;
+      const answer = normKey(w.en);
+      const pr = getProg(w.en);
+      const fb = document.getElementById("learnFb");
+      session.revealed = true;
+      pr.last = Date.now();
+
+      if (user === answer) {
+        input.className = "ok";
+        pr.spellOk += 1;
+        session.spellOk += 1;
+        recomputeMastered(w.en);
+        fb.className = "feedback show ok";
+        fb.innerHTML = `✓ 拼写正确<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          <div class="example" style="margin-top:6px">回车继续</div>`;
+        speak(w.en);
+      } else {
+        input.className = "bad";
+        pr.spellWrong += 1;
+        pr.mastered = false;
+        session.spellWrong += 1;
+        fb.className = "feedback show bad";
+        fb.innerHTML = `✗ 拼写错误<div class="ans">答案：${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+          <div class="example">你写的：${escapeHtml(input.value)}</div>
+          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          <div class="example" style="margin-top:6px">已加入薄弱重练 · 回车继续</div>`;
+        requeueWrong(item);
+        // 拼错也加强认读
+        if (Math.random() < 0.6) requeueWrong({ word: w, mode: "read" });
+      }
+      saveProgress();
+      updateSessionHud();
+      updateStats();
+    }
+
+    function requeueWrong(item) {
+      // 插到后面一点，避免立刻重复太烦，但本轮会再遇到
+      const insertAt = Math.min(session.queue.length, session.index + 3 + Math.floor(Math.random() * 3));
+      session.queue.splice(insertAt, 0, { word: item.word, mode: item.mode });
+    }
+
+    function nextItem() {
+      session.index += 1;
+      renderCard();
     }
 
     function makeHint(en, level) {
-      const chars = en.split("");
-      // level 1: length + first letter; level 2: more letters
-      return chars.map((ch, i) => {
+      return en.split("").map((ch, i) => {
         if (ch === " ") return " ";
         if (level >= 1 && i === 0) return ch;
-        if (level >= 2 && (i % 3 === 0)) return ch;
+        if (level >= 2 && i % 3 === 0) return ch;
         if (level >= 3) return ch;
         return "_";
       }).join("");
     }
 
-    function checkAnswer() {
-      const w = currentWord();
-      if (!w || spell.revealed) {
-        if (spell.revealed) nextSpell();
-        return;
-      }
-      const input = document.getElementById("answer");
-      const user = normKey(input.value);
-      const answer = normKey(w.en);
-      const fb = document.getElementById("spellFb");
-      const p = getProg(w.en);
-
-      if (!user) return;
-
-      if (user === answer) {
-        input.className = "ok";
-        p.right += 1;
-        p.last = Date.now();
-        if (p.right >= 2 && p.right > p.wrong) p.mastered = true;
-        spell.right += 1;
-        spell.streak += 1;
-        spell.revealed = true;
-        fb.className = "feedback show ok";
-        fb.innerHTML = `✓ 正确！<div class="ans">${w.en} ${w.ipa || ""}</div><div class="example">${w.example || ""}</div>`;
-        speak(w.en);
-      } else {
-        input.className = "bad";
-        p.wrong += 1;
-        p.mastered = false;
-        p.last = Date.now();
-        spell.wrong += 1;
-        spell.streak = 0;
-        spell.revealed = true;
-        fb.className = "feedback show bad";
-        fb.innerHTML = `✗ 不对<div class="ans">答案：${w.en} ${w.ipa || ""}</div><div class="example">你写的：${input.value}</div><div class="example">${w.example || ""}</div>`;
-        // put back later in queue for retry
-        if (spell.index < spell.queue.length - 1) {
-          const retry = spell.queue[spell.index];
-          spell.queue.push(retry);
-        }
-      }
-      saveProgress(progress);
-      updateStats();
-      document.getElementById("sessScore").textContent = `对 ${spell.right} · 错 ${spell.wrong}`;
-      document.getElementById("sStreak").textContent = spell.streak;
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 
-    function nextSpell() {
-      spell.index += 1;
-      showSpellCard();
-    }
-
-    document.getElementById("btnCheck").onclick = checkAnswer;
-    document.getElementById("answer").addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (spell.revealed) nextSpell();
-        else checkAnswer();
-      }
-    });
-    document.getElementById("btnHint").onclick = () => {
-      const w = currentWord();
-      if (!w) return;
-      spell.hintLevel = Math.min(3, spell.hintLevel + 1);
-      document.getElementById("spellHint").textContent = makeHint(w.en, spell.hintLevel);
+    document.getElementById("btnStartRound").onclick = () => {
+      weakOnly = false;
+      if (filter === "hard") filter = "all";
+      renderFilters();
+      startRound();
     };
-    document.getElementById("btnSpeak").onclick = () => {
-      const w = currentWord();
-      if (w) speak(w.en);
-    };
-    document.getElementById("btnSkip").onclick = () => {
-      const w = currentWord();
-      if (!w) return;
-      if (!spell.revealed) {
-        const p = getProg(w.en);
-        p.wrong += 1;
-        p.mastered = false;
-        saveProgress(progress);
-        spell.wrong += 1;
-        spell.streak = 0;
-      }
-      nextSpell();
-      updateStats();
-    };
-    document.getElementById("btnStart").onclick = () => {
-      hardOnlySession = false;
-      startSpellRound();
-    };
-    document.getElementById("btnHardOnly").onclick = () => {
-      hardOnlySession = true;
+    document.getElementById("btnWeakRound").onclick = () => {
+      weakOnly = true;
       filter = "hard";
       renderFilters();
-      startSpellRound();
+      startRound();
     };
 
-    // —— FLASH ——
-    let flashQueue = [];
-    let flashIndex = 0;
-    let flashFlipped = false;
-
-    function prepareFlash() {
-      flashQueue = shuffle(filteredWords());
-      flashIndex = 0;
-      flashFlipped = false;
-      showFlash();
-    }
-    function showFlash() {
-      const w = flashQueue[flashIndex];
-      document.getElementById("flashCount").textContent = flashQueue.length
-        ? `${flashIndex + 1} / ${flashQueue.length}` : "0 / 0";
-      document.getElementById("flashFront").classList.remove("hide");
-      document.getElementById("flashBack").classList.remove("show");
-      flashFlipped = false;
-      if (!w) {
-        document.getElementById("flashEn").textContent = "没有单词";
-        document.getElementById("flashIpa").textContent = "";
+    // —— WEAK LIST ——
+    function renderWeak() {
+      const list = allWords()
+        .map(w => ({ w, score: weakScore(w.en), p: getProg(w.en) }))
+        .filter(x => isWeak(x.w.en) || !x.p.introduced)
+        .sort((a, b) => b.score - a.score);
+      const el = document.getElementById("weakList");
+      if (!list.length) {
+        el.innerHTML = `<div class="bank-item"><div class="zh">暂无薄弱词，先去「学习」认读新词吧。</div></div>`;
         return;
       }
-      document.getElementById("flashEn").textContent = w.en;
-      document.getElementById("flashIpa").textContent = w.ipa || "";
-      document.getElementById("flashZh").textContent = w.zh || "";
-      document.getElementById("flashPos").textContent = w.pos || "";
-      document.getElementById("flashEx").textContent = w.example || "";
+      el.innerHTML = list.map(({ w, p, score }) => `
+        <div class="bank-item weak">
+          <div class="en">${escapeHtml(w.en)} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${escapeHtml(w.ipa || "")}</span></div>
+          <div class="tag">权重 ${score.toFixed(1)}</div>
+          <div class="zh">${escapeHtml(w.pos || "")} · ${escapeHtml(w.zh || "")}</div>
+          <div class="meters">
+            <span class="meter ${p.readWrong ? "bad" : "ok"}">认错 ${p.readWrong} / 认对 ${p.readOk}</span>
+            <span class="meter ${p.spellWrong ? "bad" : "ok"}">拼错 ${p.spellWrong} / 拼对 ${p.spellOk}</span>
+            <span class="meter">${p.introduced ? (p.mastered ? "已掌握" : "学习中") : "未认读"}</span>
+          </div>
+        </div>
+      `).join("");
     }
-    document.getElementById("flashCard").addEventListener("click", e => {
-      if (e.target.closest("button")) return;
-      flashFlipped = !flashFlipped;
-      document.getElementById("flashFront").classList.toggle("hide", flashFlipped);
-      document.getElementById("flashBack").classList.toggle("show", flashFlipped);
-    });
-    document.getElementById("btnFlashSpeak").onclick = e => {
-      e.stopPropagation();
-      const w = flashQueue[flashIndex];
-      if (w) speak(w.en);
-    };
-    document.getElementById("btnFlashKnow").onclick = e => {
-      e.stopPropagation();
-      const w = flashQueue[flashIndex];
-      if (!w) return;
-      const p = getProg(w.en);
-      p.right += 1;
-      if (p.right >= 2 && p.right > p.wrong) p.mastered = true;
-      p.last = Date.now();
-      saveProgress(progress);
-      flashIndex = (flashIndex + 1) % Math.max(flashQueue.length, 1);
-      showFlash();
-      updateStats();
-    };
-    document.getElementById("btnFlashAgain").onclick = e => {
-      e.stopPropagation();
-      const w = flashQueue[flashIndex];
-      if (!w) return;
-      const p = getProg(w.en);
-      p.wrong += 1;
-      p.mastered = false;
-      p.last = Date.now();
-      saveProgress(progress);
-      flashIndex = (flashIndex + 1) % Math.max(flashQueue.length, 1);
-      showFlash();
-      updateStats();
-    };
 
     // —— BANK ——
     function renderBank() {
-      const list = filteredWords().sort((a, b) => a.en.localeCompare(b.en));
+      const list = [...filteredWords()].sort((a, b) => weakScore(b.en) - weakScore(a.en));
       const el = document.getElementById("bankList");
       el.innerHTML = list.map(w => {
         const p = getProg(w.en);
-        return `<div class="bank-item ${p.mastered ? "mastered" : ""}">
-          <div class="en">${w.en} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${w.ipa || ""}</span></div>
-          <div class="tag">${p.mastered ? "已掌握" : `对${p.right}/错${p.wrong}`}</div>
-          <div class="zh">${w.pos || ""} · ${w.zh || ""}</div>
+        const cls = p.mastered ? "mastered" : (isWeak(w.en) ? "weak" : "");
+        return `<div class="bank-item ${cls}">
+          <div class="en">${escapeHtml(w.en)} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${escapeHtml(w.ipa || "")}</span></div>
+          <div class="tag">${p.mastered ? "已掌握" : (p.introduced ? "学习中" : "未认读")}</div>
+          <div class="zh">${escapeHtml(w.pos || "")} · ${escapeHtml(w.zh || "")}</div>
+          <div class="meters">
+            <span class="meter ${p.readWrong ? "bad" : ""}">认 ${p.readOk}/${p.readWrong}</span>
+            <span class="meter ${p.spellWrong ? "bad" : ""}">拼 ${p.spellOk}/${p.spellWrong}</span>
+          </div>
         </div>`;
-      }).join("") || `<div class="bank-item"><div class="zh">暂无单词</div></div>`;
+      }).join("") || `<div class="bank-item"><div class="zh">暂无</div></div>`;
     }
 
     document.getElementById("btnExport").onclick = () => {
-      const data = allWords();
+      downloadJson(allWords(), "vocab-bank.json");
+    };
+    document.getElementById("btnExportProgress").onclick = () => {
+      downloadJson(progress, "vocab-progress.json");
+    };
+    function downloadJson(data, name) {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "vocab-bank-export.json";
+      a.download = name;
       a.click();
-    };
+    }
 
     document.getElementById("btnImport").onclick = () => {
       try {
@@ -777,13 +956,12 @@
         if (!Array.isArray(arr)) throw new Error("需要 JSON 数组");
         const custom = loadCustom();
         const map = new Map(custom.map(w => [normKey(w.en), w]));
-        arr.forEach(w => {
-          if (w && w.en) map.set(normKey(w.en), w);
-        });
+        arr.forEach(w => { if (w && w.en) map.set(normKey(w.en), w); });
         saveCustom([...map.values()]);
-        alert(`已合并导入，自定义词库共 ${map.size} 条（与 words.js 合并显示）`);
-        startSpellRound();
+        alert(`已合并，自定义词 ${map.size} 条`);
+        startRound();
         renderBank();
+        renderWeak();
         updateStats();
       } catch (e) {
         alert("导入失败：" + e.message);
@@ -791,22 +969,22 @@
     };
 
     document.getElementById("btnResetProgress").onclick = () => {
-      if (!confirm("确定清空所有对错/掌握进度？词库本身不会删。")) return;
+      if (!confirm("清空所有认读/拼写统计？词库保留。")) return;
       progress = {};
-      saveProgress(progress);
-      updateStats();
+      saveProgress();
+      startRound();
       renderBank();
-      startSpellRound();
+      renderWeak();
+      updateStats();
     };
 
-    // —— PWA install + service worker ——
+    // —— PWA ——
     const onlineEl = document.getElementById("onlineUrl");
     if (onlineEl) {
       onlineEl.innerHTML = location.protocol.startsWith("http")
         ? `<a href="${location.href}" style="color:var(--accent)">${location.href}</a>`
-        : "本地文件模式；部署到 GitHub Pages 后这里会显示公网链接。";
+        : "本地文件模式；线上见 GitHub Pages。";
     }
-
     let deferredPrompt = null;
     const banner = document.getElementById("installBanner");
     const btnInstall = document.getElementById("btnInstall");
@@ -815,15 +993,10 @@
       window.navigator.standalone === true;
     const dismissed = localStorage.getItem("ielts_vocab_install_dismissed") === "1";
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
     if (!isStandalone && !dismissed && location.protocol.startsWith("http")) {
       banner.classList.add("show");
-      if (isIos) {
-        document.getElementById("installIosHint").style.display = "block";
-      }
+      if (isIos) document.getElementById("installIosHint").style.display = "block";
     }
-
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -832,7 +1005,6 @@
         btnInstall.style.display = "inline-block";
       }
     });
-
     btnInstall.addEventListener("click", async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
@@ -840,29 +1012,22 @@
       deferredPrompt = null;
       btnInstall.style.display = "none";
     });
-
     document.getElementById("btnShowIos").addEventListener("click", () => {
       document.getElementById("installIosHint").style.display = "block";
-      if (!isIos) {
-        alert("若是 iPhone：请用 Safari 打开本网站（不要用微信内置浏览器），然后点底部分享 → 添加到主屏幕。");
-      }
+      if (!isIos) alert("iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。");
     });
-
     document.getElementById("btnDismissInstall").addEventListener("click", () => {
       localStorage.setItem("ielts_vocab_install_dismissed", "1");
       banner.classList.remove("show");
     });
-
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-      navigator.serviceWorker.register("./sw.js").catch((err) => {
-        console.warn("SW register failed", err);
-      });
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
 
     // init
     renderFilters();
-    startSpellRound();
-    prepareFlash();
+    startRound();
+    renderWeak();
     updateStats();
   </script>
 </body>
