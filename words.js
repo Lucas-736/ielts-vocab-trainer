@@ -1,6 +1,7 @@
 /**
  * 词库数据 —— 来自 SecondBrain 雅思笔记
  * 来源：词汇积累.md · Day1-足球运动员的大脑-词汇语法.md
+ *       Day2-Should we cycle more?.md
  *
  * 字段说明：
  *   en        英文（拼写答案，大小写不敏感）
@@ -12,7 +13,16 @@
  *   star      是否重点词
  *
  * 新增单词：按同样格式追加到下方数组即可。
+ *
+ * 章节：由 tags 里的 dayN 决定；标题在下面的 VOCAB_CHAPTERS 里补充。
  */
+
+/** 章节标题表：key 为 tags 里的 dayN，value 为显示名 */
+window.VOCAB_CHAPTERS = {
+  day1: "Day 1 · 足球运动员的大脑",
+  day2: "Day 2 · Should we cycle more?"
+};
+
 window.VOCAB_BANK = [
   // —— Day 1 核心 6 词 ——
   {
@@ -568,6 +578,98 @@ window.VOCAB_BANK = [
     zh: "回顾；小结",
     example: "time for a vocabulary recap",
     tags: ["day1"],
+    star: false
+  },
+
+  // —— Day 2 · Should we cycle more?（BBC 6 Minute English）——
+  {
+    en: "deeply ingrained",
+    ipa: "/ˈdiːpli ɪnˈɡreɪnd/",
+    pos: "adj.",
+    zh: "深深植入的；根深蒂固的",
+    example: "Cycling is deeply ingrained in Dutch culture.",
+    tags: ["day2", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "take off",
+    ipa: "/teɪk ɒf/",
+    pos: "短语",
+    zh: "突然流行；迅速成功",
+    example: "Cycling took off after the pandemic.",
+    tags: ["day2", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "milestone",
+    ipa: "/ˈmaɪlstəʊn/",
+    pos: "n.",
+    zh: "里程碑；重要事件",
+    example: "Getting a bike is a milestone for many kids.",
+    tags: ["day2", "core"],
+    star: true
+  },
+  {
+    en: "quality of life",
+    ipa: "/ˈkwɒləti əv laɪf/",
+    pos: "短语",
+    zh: "生活质量",
+    example: "Cycling improves quality of life.",
+    tags: ["day2", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "liveability",
+    ipa: "/ˌlɪvəˈbɪləti/",
+    pos: "n.",
+    zh: "可居住性；宜居性",
+    example: "More bike lanes increase city liveability.",
+    tags: ["day2", "core"],
+    star: true
+  },
+  {
+    en: "a copy and paste",
+    ipa: "/ə ˈkɒpi ənd peɪst/",
+    pos: "习语",
+    zh: "抄来的；一模一样的东西",
+    example: "This argument is a copy and paste of the old one.",
+    tags: ["day2", "phrase"],
+    star: false
+  },
+  {
+    en: "thriving",
+    ipa: "/ˈθraɪvɪŋ/",
+    pos: "adj.",
+    zh: "繁荣的；兴旺的",
+    example: "The cycling scene in Europe is thriving.",
+    tags: ["day2"],
+    star: false
+  },
+  {
+    en: "infrastructure",
+    ipa: "/ˈɪnfrəstrʌktʃə/",
+    pos: "n.",
+    zh: "基础设施",
+    example: "Bike infrastructure is improving.",
+    tags: ["day2"],
+    star: false
+  },
+  {
+    en: "commuter",
+    ipa: "/kəˈmjuːtə/",
+    pos: "n.",
+    zh: "通勤者",
+    example: "The Netherlands has more commuters than any other country.",
+    tags: ["day2"],
+    star: false
+  },
+  {
+    en: "convenience",
+    ipa: "/kənˈviːniəns/",
+    pos: "n.",
+    zh: "方便；便利",
+    example: "Electric bikes increase convenience.",
+    tags: ["day2"],
     star: false
   }
 ];

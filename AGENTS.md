@@ -17,6 +17,7 @@
 3. 音标用 IPA，英式优先，写成 `"/ˈæmpl/"` 这种带斜杠形式。  
 4. `tags` 用已有约定：`dayN`、`core`、`phrase`、话题词等。  
 5. **不要**重复相同的 `en`（大小写/空格规范化后视为同一词）。  
+5.1 章节由 `tags` 里的 `dayN` 决定；新开一章时在 `words.js` 顶部的 `window.VOCAB_CHAPTERS` 里补一条标题（`day3: "Day 3 · 主题"`），没补也能显示成 `Day 3`。  
 6. 若词来自用户 SecondBrain 笔记，在 `words.js` 顶部注释写上来源文件名。  
 7. 改完后：
 

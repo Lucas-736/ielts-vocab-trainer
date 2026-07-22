@@ -77,6 +77,39 @@
     .chip { padding: 6px 11px; font-size: 0.78rem; }
     .panel { display: none; }
     .panel.active { display: block; }
+
+    .chapter-list {
+      max-height: 380px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .chapter-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .chapter-item:hover { background: var(--card2); }
+    .chapter-item.active, .chapter-item.selected {
+      background: linear-gradient(135deg, #3d7ea6, #5b9fd4);
+      color: #fff;
+      font-weight: 650;
+    }
+    .chapter-badge {
+      margin: 2px 0 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .shuffle-btn {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -291,12 +324,25 @@
 
     <div class="tabs">
       <button class="tab active" data-panel="learn">🧠 学习</button>
+      <button class="tab" data-panel="chapters">📚 章节选择</button>
       <button class="tab" data-panel="weak">📉 薄弱</button>
       <button class="tab" data-panel="bank">📋 词库</button>
       <button class="tab" data-panel="settings">⚙ 设置</button>
     </div>
 
+    <div class="chapter-badge" id="chapterBadge">当前章节：全部章节</div>
+
     <div class="filters" id="filters"></div>
+
+    <!-- CHAPTER SELECTOR -->
+    <section id="chapters" class="panel">
+      <div class="flow-tip">你可以选择具体章节复习，也可以打乱所有章节随机刷词。</div>
+      <div class="chapter-list" id="chapterList"></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="shuffle-btn" id="btnShuffle">🔀 打乱章节</button>
+        <button class="btn ghost" id="btnReviewAll">复习全部</button>
+      </div>
+    </section>
 
     <!-- LEARN -->
     <section id="learn" class="panel active">
@@ -374,6 +420,7 @@
     const STORAGE = "ielts_vocab_progress_v2";
     const STORAGE_LEGACY = "ielts_vocab_progress_v1";
     const CUSTOM_KEY = "ielts_vocab_custom_v1";
+    const CHAPTER_KEY = "ielts_vocab_chapter_v1";
     const BATCH = 12; // 每轮最多题量（自适应会插队）
 
     function loadProgress() {
@@ -395,6 +442,10 @@
     let progress = loadProgress();
     let filter = "all";
     let weakOnly = false;
+    /** 当前章节："all" 表示全部章节；否则是 dayN / other */
+    let chapter = localStorage.getItem(CHAPTER_KEY) || "all";
+    /** 打乱模式：忽略薄弱权重，纯随机出词 */
+    let shuffleMode = false;
 
     function normKey(s) {
       return String(s).trim().toLowerCase().replace(/\s+/g, " ");
@@ -409,6 +460,47 @@
         map.set(normKey(w.en), { ...w, en: w.en.trim() });
       });
       return [...map.values()];
+    }
+
+    // —— CHAPTERS ——
+    /** 词所属章节：tags 里的第一个 dayN，没有则归入「其他」 */
+    function chapterOf(w) {
+      const t = (w.tags || []).find(x => /^day\d+$/i.test(x));
+      return t ? t.toLowerCase() : "other";
+    }
+    function chapterLabel(id) {
+      if (id === "all") return "全部章节";
+      if (id === "other") return "其他 / 自定义词";
+      const titles = window.VOCAB_CHAPTERS || {};
+      if (titles[id]) return titles[id];
+      const n = id.replace(/^day/i, "");
+      return `Day ${n}`;
+    }
+    /** 章节列表（按 dayN 数字排序，other 垫底） */
+    function chapterStats() {
+      const groups = new Map();
+      allWords().forEach(w => {
+        const id = chapterOf(w);
+        if (!groups.has(id)) groups.set(id, []);
+        groups.get(id).push(w);
+      });
+      const list = [...groups.entries()].map(([id, words]) => ({
+        id,
+        label: chapterLabel(id),
+        total: words.length,
+        mastered: words.filter(w => getProg(w.en).mastered).length,
+        fresh: words.filter(w => !getProg(w.en).introduced).length
+      }));
+      list.sort((a, b) => {
+        if (a.id === "other") return 1;
+        if (b.id === "other") return -1;
+        return parseInt(a.id.slice(3), 10) - parseInt(b.id.slice(3), 10);
+      });
+      return list;
+    }
+    function setChapter(id) {
+      chapter = id;
+      localStorage.setItem(CHAPTER_KEY, id);
     }
 
     /** 进度结构 + 旧数据兼容 */
@@ -477,8 +569,8 @@
 
     function filteredWords() {
       let list = allWords();
+      if (chapter !== "all") list = list.filter(w => chapterOf(w) === chapter);
       if (filter === "star") list = list.filter(w => w.star);
-      if (filter === "day1") list = list.filter(w => (w.tags || []).includes("day1"));
       if (filter === "core") list = list.filter(w => (w.tags || []).includes("core"));
       if (filter === "mastered") list = list.filter(w => getProg(w.en).mastered);
       if (filter === "new") list = list.filter(w => !getProg(w.en).introduced);
@@ -503,7 +595,6 @@
       { id: "new", label: "未认读" },
       { id: "core", label: "核心6词" },
       { id: "star", label: "★重点" },
-      { id: "day1", label: "Day1" },
       { id: "hard", label: "薄弱" },
       { id: "mastered", label: "已掌握" },
     ];
@@ -526,16 +617,83 @@
       });
     }
 
+    function showPanel(name) {
+      document.querySelectorAll(".tab").forEach(t =>
+        t.classList.toggle("active", t.dataset.panel === name));
+      document.querySelectorAll(".panel").forEach(p =>
+        p.classList.toggle("active", p.id === name));
+      if (name === "weak") renderWeak();
+      if (name === "bank") renderBank();
+      if (name === "chapters") renderChapters();
+    }
     document.querySelectorAll(".tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.panel).classList.add("active");
-        if (tab.dataset.panel === "weak") renderWeak();
-        if (tab.dataset.panel === "bank") renderBank();
-      });
+      tab.addEventListener("click", () => showPanel(tab.dataset.panel));
     });
+
+    // —— CHAPTER PANEL ——
+    function renderChapters() {
+      const el = document.getElementById("chapterList");
+      const rows = chapterStats();
+      // 存档里的章节可能已不存在（词库变动），回退到全部
+      if (chapter !== "all" && !rows.some(c => c.id === chapter)) setChapter("all");
+      const total = allWords().length;
+      const allRow = {
+        id: "all",
+        label: "全部章节",
+        total,
+        mastered: allWords().filter(w => getProg(w.en).mastered).length,
+        fresh: allWords().filter(w => !getProg(w.en).introduced).length
+      };
+      el.innerHTML = [allRow, ...rows].map(c => `
+        <div class="chapter-item${chapter === c.id ? " active" : ""}" data-chapter="${escapeHtml(c.id)}">
+          <div>${escapeHtml(c.label)}</div>
+          <div class="meters">
+            <span class="meter">${c.total} 词</span>
+            <span class="meter ${c.fresh ? "" : "ok"}">未认读 ${c.fresh}</span>
+            <span class="meter ok">已掌握 ${c.mastered}</span>
+          </div>
+        </div>
+      `).join("") || `<div class="chapter-item">词库为空</div>`;
+
+      el.querySelectorAll(".chapter-item[data-chapter]").forEach(item => {
+        item.onclick = () => {
+          setChapter(item.dataset.chapter);
+          shuffleMode = false;
+          filter = "all";
+          weakOnly = false;
+          renderFilters();
+          renderChapters();
+          startRound();
+          showPanel("learn");
+        };
+      });
+      updateChapterBadge();
+    }
+    function updateChapterBadge() {
+      const el = document.getElementById("chapterBadge");
+      if (!el) return;
+      el.textContent = `当前章节：${chapterLabel(chapter)}${shuffleMode ? " · 🔀 打乱" : ""}`;
+    }
+    document.getElementById("btnShuffle").onclick = () => {
+      setChapter("all");
+      shuffleMode = true;
+      filter = "all";
+      weakOnly = false;
+      renderFilters();
+      renderChapters();
+      startRound();
+      showPanel("learn");
+    };
+    document.getElementById("btnReviewAll").onclick = () => {
+      setChapter("all");
+      shuffleMode = false;
+      filter = "all";
+      weakOnly = false;
+      renderFilters();
+      renderChapters();
+      startRound();
+      showPanel("learn");
+    };
 
     function speak(text) {
       if (!window.speechSynthesis) return;
@@ -574,7 +732,10 @@
 
     function buildQueue() {
       let list = filteredWords();
-      if (filter === "mastered") {
+      if (shuffleMode) {
+        // 打乱章节：不按薄弱权重，纯随机
+        list = shuffle(list).slice(0, BATCH);
+      } else if (filter === "mastered") {
         // 复习掌握词：只做认读自测 + 拼写
         list = list.slice(0, BATCH);
       } else if (!weakOnly && filter !== "hard") {
@@ -894,7 +1055,8 @@
 
     // —— WEAK LIST ——
     function renderWeak() {
-      const list = allWords()
+      const scope = chapter === "all" ? allWords() : allWords().filter(w => chapterOf(w) === chapter);
+      const list = scope
         .map(w => ({ w, score: weakScore(w.en), p: getProg(w.en) }))
         .filter(x => isWeak(x.w.en) || !x.p.introduced)
         .sort((a, b) => b.score - a.score);
@@ -1026,6 +1188,7 @@
 
     // init
     renderFilters();
+    renderChapters();
     startRound();
     renderWeak();
     updateStats();
