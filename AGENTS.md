@@ -46,6 +46,7 @@ git push origin main
 
 ## 改 UI / 学习逻辑时
 
+- **刷词页保持纯净**：`#studyView` 里只能有返回、进度、单词卡、底栏。任何设置/筛选/导出类控件都放首页或对应 tab，不要往刷词页加。
 - **按钮归位**：学习流程的操作一律进底部 `#barPrimary`/`#barSecondary`（用 `setBar(primary, secondary, hint)`），不要再往卡片里塞按钮；卡片只放内容。
 - **选词维度只有两个**：`chapter`（章节）与 `filter`（范围），都在顶部选择条里；不要再加第三处筛选入口。
 - **所有界面文案都要走 i18n**：在 `index.html` 的 `I18N` 对象里同时补 `zh` 和 `en` 两条；静态节点用 `data-i18n="key"`，JS 里用 `t("key", { 参数 })`。不要再往 DOM 里写死中文。

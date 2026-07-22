@@ -1,5 +1,5 @@
 /* 雅思刷词 PWA Service Worker */
-const CACHE = "ielts-vocab-v6";
+const CACHE = "ielts-vocab-v7";
 const ASSETS = [
   "./",
   "./index.html",

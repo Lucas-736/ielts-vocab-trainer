@@ -592,6 +592,78 @@
       background: var(--accent); border-color: transparent; color: var(--card);
     }
 
+    /* —— 首页主入口 —— */
+    .cta {
+      display: block; width: 100%;
+      border: 0; border-radius: var(--r-lg);
+      background: var(--accent); color: var(--card);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      font-family: inherit; cursor: pointer;
+      text-align: left;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.12s ease, filter 0.2s ease;
+    }
+    .cta:active { transform: scale(0.99); }
+    .cta:hover { filter: brightness(1.06); }
+    .cta-main {
+      display: block; font-size: 1.08rem; font-weight: 650;
+      letter-spacing: 0.06em;
+    }
+    .cta-sub {
+      display: block; margin-top: 3px;
+      font-size: 0.78rem; opacity: 0.78; letter-spacing: 0.04em;
+    }
+
+    /* —— 刷词页：独立一屏 —— */
+    .studyview {
+      display: none;
+      position: fixed; inset: 0;
+      z-index: 30;
+      background:
+        radial-gradient(880px 420px at 12% -8%, var(--bg-tint1), transparent 62%),
+        var(--bg);
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+    }
+    .studyview.open { display: flex; }
+    .study-head {
+      display: flex; align-items: center; gap: 12px;
+      max-width: 560px; width: 100%; margin: 0 auto;
+      padding: 12px 16px 8px;
+    }
+    .study-back {
+      flex: none;
+      width: 38px; height: 38px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 50%;
+      font-size: 1.05rem; cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.2s;
+    }
+    .study-back:active { transform: scale(0.94); }
+    .study-title { flex: 1; min-width: 0; line-height: 1.35; }
+    .study-title b {
+      display: block; font-size: 0.88rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .study-title span { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.04em; }
+    .study-count { flex: none; font-size: 0.72rem; color: var(--muted); text-align: right; }
+    .studyview .session-bar {
+      max-width: 560px; width: 100%; margin: 0 auto 0;
+      flex: none;
+    }
+    .study-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 560px; width: 100%; margin: 0 auto;
+      padding: 14px 16px calc(150px + env(safe-area-inset-bottom));
+    }
+    .studyview .card { min-height: 320px; }
+
     /* —— 底部固定操作栏：主操作位置永远不变 —— */
     .actionbar {
       position: fixed;
@@ -695,45 +767,32 @@
     </header>
 
     <div class="tabs">
-      <button class="tab active" data-panel="learn" data-i18n="tab.learn">🧠 学习</button>
+      <button class="tab active" data-panel="home" data-i18n="tab.home">🏠 首页</button>
       <button class="tab" data-panel="bank" data-i18n="tab.bank">📋 词库</button>
       <button class="tab" data-panel="settings" data-i18n="tab.settings">⚙ 设置</button>
     </div>
 
-    <!-- 选什么词：章节 × 范围，两个维度一目了然 -->
-    <div class="scopebar">
-      <div class="sel-wrap">
-        <span class="cap" data-i18n="scope.chapterCap">章节</span>
-        <select class="sel" id="selChapter"></select>
+    <!-- HOME：只负责「选什么词」和入口 -->
+    <section id="home" class="panel active">
+      <!-- 选什么词：章节 × 范围，两个维度一目了然 -->
+      <div class="scopebar">
+        <div class="sel-wrap">
+          <span class="cap" data-i18n="scope.chapterCap">章节</span>
+          <select class="sel" id="selChapter"></select>
+        </div>
+        <div class="sel-wrap">
+          <span class="cap" data-i18n="scope.rangeCap">范围</span>
+          <select class="sel" id="selScope"></select>
+        </div>
+        <button class="scope-icon" id="btnShuffle" type="button" title="打乱顺序">🔀</button>
       </div>
-      <div class="sel-wrap">
-        <span class="cap" data-i18n="scope.rangeCap">范围</span>
-        <select class="sel" id="selScope"></select>
-      </div>
-      <button class="scope-icon" id="btnShuffle" type="button" title="打乱顺序">🔀</button>
-      <button class="scope-icon" id="btnRestart" type="button" title="重开一轮">↻</button>
-    </div>
 
-    <!-- LEARN：卡片只负责内容，操作全在底栏 -->
-    <section id="learn" class="panel active">
-      <div class="session-bar"><i id="sessBar"></i></div>
-      <div class="progress-mini">
-        <span id="sessText">准备中</span>
-        <span id="sessScore"></span>
-      </div>
-      <div class="card" id="learnCard">
-        <div class="empty" id="learnEmpty" style="display:none">
-          <h3 data-i18n="learn.emptyTitle">本轮没有词了</h3>
-          <p id="learnEmptyBody" data-i18n="learn.emptyBody">换个筛选，或点「再来一轮」</p>
-        </div>
-        <div id="learnBody">
-          <div class="stage-pill teach" id="stagePill">① 认读教学</div>
-          <div class="prompt-meta" id="learnMeta">—</div>
-          <div id="learnMain"></div>
-          <div class="feedback" id="learnFb"></div>
-        </div>
-      </div>
-      <div class="flow-tip" id="flowTip" style="margin:14px 0 0" data-i18n="learn.tipDefault">
+      <button class="cta" id="btnStart" type="button">
+        <span class="cta-main" data-i18n="home.start">开始学习</span>
+        <span class="cta-sub" id="ctaSub">—</span>
+      </button>
+
+      <div class="flow-tip" data-i18n="learn.tipDefault">
         智能路径：新词先认读教学 → 认读自测 → 拼写。错得多的词会更常出现。
       </div>
     </section>
@@ -807,12 +866,42 @@
     </section>
   </div>
 
-  <!-- 固定底栏：主操作永远在同一位置 -->
-  <div class="actionbar" id="actionBar">
-    <div class="actionbar-inner">
-      <div class="bar-primary" id="barPrimary"></div>
-      <div class="bar-secondary" id="barSecondary"></div>
-      <span class="kbd-hint" id="kbdHint"></span>
+  <!-- 刷词页：单独一屏，只有卡片和操作，没有任何设置类按钮 -->
+  <div class="studyview" id="studyView">
+    <div class="study-head">
+      <button class="study-back" id="btnExitStudy" type="button" title="返回">←</button>
+      <div class="study-title">
+        <b id="studyChapter">—</b>
+        <span id="sessText">准备中</span>
+      </div>
+      <span class="study-count" id="sessScore"></span>
+    </div>
+    <div class="session-bar"><i id="sessBar"></i></div>
+
+    <div class="study-body">
+      <div class="card" id="learnCard">
+        <div class="empty" id="learnEmpty" style="display:none">
+          <h3 data-i18n="learn.emptyTitle">本轮没有词了</h3>
+          <p id="learnEmptyBody" data-i18n="learn.emptyBody">换个筛选，或点「再来一轮」</p>
+        </div>
+        <div id="learnBody">
+          <div class="stage-pill teach" id="stagePill">① 认读教学</div>
+          <div class="prompt-meta" id="learnMeta">—</div>
+          <div id="learnMain"></div>
+          <div class="feedback" id="learnFb"></div>
+        </div>
+      </div>
+      <div class="flow-tip" id="flowTip" style="margin:14px 0 0" data-i18n="learn.tipDefault">
+        智能路径：新词先认读教学 → 认读自测 → 拼写。
+      </div>
+    </div>
+
+    <div class="actionbar" id="actionBar">
+      <div class="actionbar-inner">
+        <div class="bar-primary" id="barPrimary"></div>
+        <div class="bar-secondary" id="barSecondary"></div>
+        <span class="kbd-hint" id="kbdHint"></span>
+      </div>
     </div>
   </div>
 
@@ -1040,31 +1129,39 @@
 
     document.getElementById("selChapter").onchange = (e) => {
       setChapter(e.target.value);
-      startRound();
       refreshAll();
     };
     document.getElementById("selScope").onchange = (e) => {
       filter = e.target.value;
       weakOnly = filter === "hard";
-      startRound();
       refreshAll();
     };
     document.getElementById("btnShuffle").onclick = () => {
       shuffleMode = !shuffleMode;
-      startRound();
-      refreshAll();
-    };
-    document.getElementById("btnRestart").onclick = () => {
-      startRound();
-      showPanel("learn");
       refreshAll();
     };
 
-    /** 章节/范围一变，所有视图一起刷新 */
+    /** 章节/范围一变，主页各处一起刷新 */
     function refreshAll() {
       renderScopeBar();
       renderBank();
       updateStats();
+      updateCta();
+    }
+
+    /** 主入口副标题：这一轮会练多少词 */
+    function updateCta() {
+      const n = filteredWords().length;
+      const el = document.getElementById("ctaSub");
+      if (!el) return;
+      el.textContent = n
+        ? t("home.startSub", {
+            n: Math.min(n, BATCH),
+            scope: t(SCOPES.find(x => x.id === filter).key)
+          })
+        : t("home.startEmpty");
+      document.getElementById("btnStart").disabled = !n;
+      document.getElementById("btnStart").style.opacity = n ? "" : "0.5";
     }
 
     function showPanel(name) {
@@ -1072,12 +1169,29 @@
         el.classList.toggle("active", el.dataset.panel === name));
       document.querySelectorAll(".panel").forEach(p =>
         p.classList.toggle("active", p.id === name));
-      // 底栏只服务于学习流程
-      document.getElementById("actionBar").style.display =
-        name === "learn" ? "block" : "none";
-      document.body.style.paddingBottom = name === "learn" ? "" : "20px";
       if (name === "bank") renderBank();
     }
+
+    // —— 刷词页：进入 / 退出 ——
+    let studyOpen = false;
+    function enterStudy(fresh) {
+      studyOpen = true;
+      if (fresh !== false) startRound();
+      document.getElementById("studyView").classList.add("open");
+      document.getElementById("studyChapter").textContent =
+        chapterLabel(chapter) + " · " + t(SCOPES.find(x => x.id === filter).key);
+      document.body.style.overflow = "hidden";
+      renderCard();
+    }
+    function exitStudy() {
+      studyOpen = false;
+      document.getElementById("studyView").classList.remove("open");
+      document.body.style.overflow = "";
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      refreshAll();
+    }
+    document.getElementById("btnStart").onclick = () => enterStudy(true);
+    document.getElementById("btnExitStudy").onclick = exitStudy;
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => showPanel(tab.dataset.panel));
     });
@@ -1233,8 +1347,8 @@
         document.getElementById("learnEmptyBody").textContent =
           done ? t("learn.emptyDone") : t("learn.emptyBody");
         setBar(
-          [{ label: t("bar.again"), onClick: () => { startRound(); refreshAll(); } }],
-          [],
+          [{ label: t("bar.again"), onClick: () => { startRound(); renderCard(); } }],
+          [{ label: t("bar.back"), onClick: exitStudy }],
           ""
         );
         return;
@@ -1476,8 +1590,8 @@
 
     // —— 键盘快捷键：手不用离开键盘 ——
     document.addEventListener("keydown", (e) => {
-      const onLearn = document.getElementById("learn").classList.contains("active");
-      if (!onLearn) return;
+      if (!studyOpen) return;
+      if (e.key === "Escape") { exitStudy(); return; }
       const item = current();
       const typing = document.activeElement && document.activeElement.id === "answer";
       if (item && item.mode === "read" && !session.revealed && !typing) {
@@ -1631,6 +1745,11 @@
         "learn.tipNone": "当前筛选下没有词。换「全部」或「未认读」试试。",
         "learn.emptyTitle": "本轮没有词了", "learn.emptyBody": "换个章节或范围，再点「再来一轮」",
         "scope.chapterCap": "章节", "scope.rangeCap": "范围",
+        "tab.home": "🏠 首页",
+        "home.start": "开始学习",
+        "home.startSub": "本轮 {n} 词 · {scope}",
+        "home.startEmpty": "当前选择下没有词，换个章节或范围",
+        "bar.back": "退出本轮",
         "bank.tip": "列表跟随上方的「章节 × 范围」。选「薄弱」即按错误权重排序。",
         "bar.again": "再来一轮",
         "learn.emptyDone": "本轮完成，可以再来一轮",
@@ -1707,6 +1826,11 @@
         "learn.emptyTitle": "No words left in this round",
         "learn.emptyBody": "Change the chapter or scope, then tap “Another round”",
         "scope.chapterCap": "Chapter", "scope.rangeCap": "Scope",
+        "tab.home": "🏠 Home",
+        "home.start": "Start learning",
+        "home.startSub": "{n} words this round · {scope}",
+        "home.startEmpty": "Nothing matches — change chapter or scope",
+        "bar.back": "Leave round",
         "bank.tip": "The list follows the chapter × scope above. Pick “Weak” to sort by mistakes.",
         "bar.again": "Another round",
         "learn.emptyDone": "Round complete — go again?",
@@ -1812,6 +1936,11 @@
       renderCard();
       renderBank();
       updateStats();
+      updateCta();
+      if (studyOpen) {
+        document.getElementById("studyChapter").textContent =
+          chapterLabel(chapter) + " · " + t(SCOPES.find(x => x.id === filter).key);
+      }
       const onlineEl = document.getElementById("onlineUrl");
       if (onlineEl) {
         onlineEl.innerHTML = location.protocol.startsWith("http")
@@ -1838,7 +1967,7 @@
     renderBank();
     updateStats();
     applyLang();
-    showPanel("learn");
+    showPanel("home");
   </script>
 </body>
 </html>
