@@ -23,6 +23,12 @@ window.VOCAB_CHAPTERS = {
   day2: "Day 2 · Should we cycle more?"
 };
 
+/** 英文界面下的章节标题（缺省回落到 "Day N"） */
+window.VOCAB_CHAPTERS_EN = {
+  day1: "Day 1 · A footballer's brain",
+  day2: "Day 2 · Should we cycle more?"
+};
+
 window.VOCAB_BANK = [
   // —— Day 1 核心 6 词 ——
   {

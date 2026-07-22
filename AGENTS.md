@@ -46,6 +46,10 @@ git push origin main
 
 ## 改 UI / 学习逻辑时
 
+- **所有界面文案都要走 i18n**：在 `index.html` 的 `I18N` 对象里同时补 `zh` 和 `en` 两条；静态节点用 `data-i18n="key"`，JS 里用 `t("key", { 参数 })`。不要再往 DOM 里写死中文。
+- **配色只用 CSS 变量**（`--accent` `--card` `--text` …），变量在 `:root[data-theme="dark"]` 与 `[data-theme="light"]` 各定义一套；写死色值会导致某个主题下不可读。
+- 新章节标题记得同时补 `VOCAB_CHAPTERS` 与 `VOCAB_CHAPTERS_EN`。
+
 - 逻辑几乎全在 `index.html` 内联脚本。  
 - 改完 **必须** 把 `sw.js` 的 `CACHE` 字符串版本号递增（如 `v2` → `v3`），否则手机可能一直离线旧页。  
 - 进度 schema 在 `getProg()`；变更字段时要兼容旧 `localStorage`，或升 `STORAGE` key 并写迁移。  

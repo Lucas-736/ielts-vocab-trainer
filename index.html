@@ -13,239 +13,367 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <title>雅思词库 · 刷词</title>
+  <script>
+    /* 首屏前定好主题与语言，避免白闪 */
+    (function () {
+      var t = localStorage.getItem("ielts_vocab_theme_v1");
+      if (t !== "light" && t !== "dark") {
+        t = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light" : "dark";
+      }
+      document.documentElement.setAttribute("data-theme", t);
+      var l = localStorage.getItem("ielts_vocab_lang_v1");
+      document.documentElement.setAttribute(
+        "lang", l === "en" ? "en" : "zh-CN");
+    })();
+  </script>
   <style>
-    :root {
-      /* 底色：偏紫的墨蓝，比纯黑更耐看、对比更柔和 */
-      --bg: #0b0d17;
-      --bg2: #10132133;
-      --card: #161a2b;
-      --card2: #1e2338;
-      --line: #2a3050;
-      --text: #eef1fb;
-      --muted: #99a1c0;
+    /* ============================================================
+       主题令牌：默认「夜·墨」；html[data-theme="light"] 切到「昼·纸」
+       设计取向：纸墨文艺 —— 衬线标题、低饱和靛/赭、细线分隔、留白
+       ============================================================ */
+    :root,
+    :root[data-theme="dark"] {
+      --bg: #14151a;
+      --bg-tint1: rgba(122,142,176,0.10);
+      --bg-tint2: rgba(184,140,102,0.07);
+      --card: #1b1d24;
+      --card2: #22242d;
+      --card-grad: linear-gradient(180deg, #1c1e26, #191b22);
+      --line: #2e313c;
+      --line-soft: #262933;
+      --text: #ece6da;
+      --muted: #949099;
 
-      /* 主色：靛紫 → 亮紫（对标主流记忆类 App 的活力主色） */
-      --accent: #7c6cff;
-      --accent2: #a48bff;
-      --accent-soft: rgba(124,108,255,0.16);
+      --accent: #8fa9cc;       /* 黛蓝 */
+      --accent2: #c2a37a;      /* 赭金 */
+      --accent-soft: rgba(143,169,204,0.14);
+      --accent-line: rgba(143,169,204,0.30);
 
-      /* 语义色 */
-      --good: #34d399;
-      --bad: #fb7185;
-      --gold: #fbbf24;
-      --warn: #fb923c;
-      --cyan: #22d3ee;
-      --purple: #c084fc;
+      --good: #7fb28c;         /* 竹青 */
+      --bad: #cf7f83;          /* 绛 */
+      --gold: #d2ab6a;         /* 藤黄 */
+      --warn: #c99160;
+      --cyan: #86b0b4;         /* 天青 */
+      --purple: #a898c4;       /* 紫毫 */
 
-      --shadow: 0 8px 24px rgba(4,6,18,0.55);
-      --r-lg: 20px;
-      --r-md: 14px;
+      --hero-grad: linear-gradient(140deg, #232838 0%, #2c2a35 55%, #38303a 100%);
+      --hero-text: #f2ece0;
+      --hero-sub: rgba(242,236,224,0.72);
+      --hero-track: rgba(242,236,224,0.16);
+      --hero-fill: linear-gradient(90deg, #c2a37a, #e2d3b4);
+      --seal: #b4696b;         /* 印章红 */
+
+      --shadow: 0 10px 30px rgba(0,0,0,0.42);
+      --shadow-soft: 0 2px 10px rgba(0,0,0,0.28);
+      --r-lg: 18px;
+      --r-md: 12px;
     }
+
+    :root[data-theme="light"] {
+      --bg: #f6f2e9;           /* 宣纸 */
+      --bg-tint1: rgba(120,142,176,0.13);
+      --bg-tint2: rgba(190,150,110,0.14);
+      --card: #fffdf8;
+      --card2: #f1ece1;
+      --card-grad: linear-gradient(180deg, #fffdf8, #faf6ed);
+      --line: #e0d8c8;
+      --line-soft: #ece5d8;
+      --text: #2f2c28;         /* 墨 */
+      --muted: #857e73;
+
+      --accent: #4d6789;
+      --accent2: #9a6f45;
+      --accent-soft: rgba(77,103,137,0.10);
+      --accent-line: rgba(77,103,137,0.26);
+
+      --good: #4f7f5f;
+      --bad: #a8555c;
+      --gold: #9c7430;
+      --warn: #a86b34;
+      --cyan: #4a7c80;
+      --purple: #6f5f8e;
+
+      --hero-grad: linear-gradient(140deg, #3d4a5e 0%, #4b4a52 55%, #5a4a4a 100%);
+      --hero-text: #fbf7ef;
+      --hero-sub: rgba(251,247,239,0.78);
+      --hero-track: rgba(251,247,239,0.22);
+      --hero-fill: linear-gradient(90deg, #e5c894, #fbf3e2);
+      --seal: #a4494c;
+
+      --shadow: 0 10px 26px rgba(74,62,44,0.10);
+      --shadow-soft: 0 2px 8px rgba(74,62,44,0.07);
+    }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
       background:
-        radial-gradient(900px 420px at 15% -10%, rgba(124,108,255,0.20), transparent 60%),
-        radial-gradient(760px 380px at 95% 0%, rgba(34,211,238,0.12), transparent 62%),
+        radial-gradient(880px 420px at 12% -8%, var(--bg-tint1), transparent 62%),
+        radial-gradient(720px 380px at 96% 2%, var(--bg-tint2), transparent 64%),
         var(--bg);
       background-attachment: fixed;
       color: var(--text);
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.62;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    .wrap { max-width: 560px; margin: 0 auto; padding: 16px 14px 72px; }
+    /* 衬线：标题与单词本体，纸墨气质的来源 */
+    .serif {
+      font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC",
+                   Georgia, "Times New Roman", serif;
+    }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 10px 16px 72px; }
+
+    /* —— 顶栏：主题 / 语言切换 —— */
+    .topbar {
+      display: flex; align-items: center; gap: 8px;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    .icon-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.12s;
+    }
+    .icon-btn:hover { color: var(--text); border-color: var(--accent-line); }
+    .icon-btn:active { transform: scale(0.96); }
 
     /* —— 封面 Hero —— */
     .hero {
       position: relative;
       overflow: hidden;
       border-radius: var(--r-lg);
-      padding: 18px 16px 16px;
-      margin-bottom: 12px;
-      background: linear-gradient(140deg, #4c3ddb 0%, #7c6cff 45%, #b06ef7 100%);
+      padding: 20px 18px 17px;
+      margin-bottom: 14px;
+      background: var(--hero-grad);
       box-shadow: var(--shadow);
     }
+    /* 淡淡的水墨晕，右上角 */
     .hero::after {
       content: "";
       position: absolute;
-      right: -60px; top: -70px;
-      width: 210px; height: 210px;
+      right: -70px; top: -80px;
+      width: 220px; height: 220px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.30), transparent 68%);
+      background: radial-gradient(circle, rgba(255,255,255,0.16), transparent 66%);
       pointer-events: none;
     }
-    .hero-top { display: flex; align-items: center; gap: 12px; position: relative; }
+    /* 细内框，像信笺压边 */
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: calc(var(--r-lg) - 6px);
+      pointer-events: none;
+    }
+    .hero-top { display: flex; align-items: center; gap: 13px; position: relative; }
     .hero-logo {
-      width: 46px; height: 46px; flex: none;
+      width: 44px; height: 44px; flex: none;
       display: grid; place-items: center;
-      font-size: 1.5rem;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(6px);
+      font-size: 1.1rem; font-weight: 600;
+      color: #fff;
+      border-radius: 10px;
+      background: var(--seal);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+      letter-spacing: 0.02em;
     }
     .hero h1 {
-      font-size: 1.32rem;
-      margin: 0 0 2px;
-      letter-spacing: 0.01em;
-      color: #fff;
+      font-size: 1.34rem;
+      font-weight: 600;
+      margin: 0 0 3px;
+      letter-spacing: 0.06em;
+      color: var(--hero-text);
     }
-    .hero p { margin: 0; font-size: 0.82rem; color: rgba(255,255,255,0.82); }
-    .hero-progress { position: relative; margin-top: 14px; }
+    .hero p {
+      margin: 0; font-size: 0.79rem;
+      color: var(--hero-sub);
+      letter-spacing: 0.05em;
+    }
+    .hero-progress { position: relative; margin-top: 16px; }
     .hero-progress .line {
       display: flex; justify-content: space-between;
-      font-size: 0.76rem; color: rgba(255,255,255,0.9);
-      margin-bottom: 6px;
+      font-size: 0.74rem; color: var(--hero-sub);
+      letter-spacing: 0.05em;
+      margin-bottom: 7px;
     }
     .hero-bar {
-      height: 8px;
+      height: 5px;
       border-radius: 99px;
-      background: rgba(255,255,255,0.22);
+      background: var(--hero-track);
       overflow: hidden;
     }
     .hero-bar i {
       display: block; height: 100%; width: 0%;
       border-radius: 99px;
-      background: linear-gradient(90deg, #ffffff, #c9f7e5);
-      transition: width 0.35s ease;
+      background: var(--hero-fill);
+      transition: width 0.4s ease;
     }
 
+    /* —— 统计 —— */
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 9px;
+      margin-bottom: 16px;
     }
     .stat {
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid var(--line);
+      background: var(--card-grad);
+      border: 1px solid var(--line-soft);
       border-radius: var(--r-md);
       padding: 11px 6px;
       text-align: center;
+      box-shadow: var(--shadow-soft);
     }
-    .stat b { display: block; font-size: 1.15rem; font-weight: 750; color: var(--text); }
-    .stat span { font-size: 0.68rem; color: var(--muted); }
-    .stat.total b { color: var(--accent2); }
+    .stat b {
+      display: block; font-size: 1.2rem; font-weight: 600;
+      color: var(--text); letter-spacing: 0.02em;
+    }
+    .stat span { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
+    .stat.total b { color: var(--accent); }
     .stat.new b   { color: var(--cyan); }
     .stat.weak b  { color: var(--bad); }
     .stat.done b  { color: var(--good); }
-    .tabs {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
-    }
+
+    /* —— 标签页 / 筛选 —— */
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 13px; }
     .tab, .chip, button.btn {
       border: 1px solid var(--line);
       background: var(--card);
       color: var(--text);
       border-radius: 999px;
-      padding: 9px 14px;
-      font-size: 0.86rem;
+      padding: 8px 15px;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
       cursor: pointer;
-      transition: transform 0.12s ease, background 0.18s ease, border-color 0.18s ease;
+      transition: transform 0.12s ease, background 0.2s ease,
+                  border-color 0.2s ease, color 0.2s ease;
     }
     .tab:active, .chip:active, button.btn:active { transform: scale(0.97); }
     .tab.active, .chip.on {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: var(--accent);
       border-color: transparent;
-      color: #fff;
-      font-weight: 650;
-      box-shadow: 0 4px 14px rgba(124,108,255,0.35);
+      color: var(--card);
+      font-weight: 600;
+      box-shadow: var(--shadow-soft);
     }
-    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .chip { padding: 6px 11px; font-size: 0.78rem; }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 13px; }
+    .chip { padding: 5px 12px; font-size: 0.77rem; }
     .panel { display: none; }
     .panel.active { display: block; }
 
+    /* —— 章节 —— */
     .chapter-list {
-      max-height: 380px;
       overflow: auto;
-      border: 1px solid var(--line);
+      max-height: 380px;
+      border: 1px solid var(--line-soft);
       border-radius: var(--r-md);
       background: var(--card);
+      box-shadow: var(--shadow-soft);
     }
     .chapter-item {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line-soft);
       cursor: pointer;
-      font-size: 0.95rem;
-      transition: background 0.18s ease;
+      font-size: 0.94rem;
+      transition: background 0.2s ease;
     }
     .chapter-item:last-child { border-bottom: 0; }
     .chapter-item:hover { background: var(--card2); }
     .chapter-item.active, .chapter-item.selected {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      font-weight: 650;
-    }
-    .chapter-item.active .meter { background: rgba(255,255,255,0.2); color: #fff; }
-    .chapter-badge {
-      margin: 2px 0 10px;
-      font-size: 0.78rem;
-      color: var(--accent2);
       background: var(--accent-soft);
-      border: 1px solid rgba(124,108,255,0.28);
-      border-radius: 99px;
-      padding: 5px 12px;
+      box-shadow: inset 3px 0 0 var(--accent);
+      font-weight: 600;
+    }
+    .chapter-badge {
+      margin: 0 0 12px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      border-left: 2px solid var(--accent-line);
+      padding: 1px 0 1px 10px;
       display: inline-block;
     }
     .shuffle-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
+      background: var(--accent);
+      color: var(--card);
       border: 0;
-      padding: 11px 18px;
-      border-radius: 99px;
-      font-size: 0.88rem;
-      font-weight: 650;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(124,108,255,0.35);
+      box-shadow: var(--shadow-soft);
     }
+
+    /* —— 学习卡 —— */
     .card {
-      background: linear-gradient(180deg, var(--card), #141828);
-      border: 1px solid var(--line);
+      background: var(--card-grad);
+      border: 1px solid var(--line-soft);
       border-radius: var(--r-lg);
-      padding: 20px 16px;
+      padding: 24px 20px;
       min-height: 300px;
       box-shadow: var(--shadow);
     }
     .stage-pill {
       display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 650;
-      padding: 4px 10px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 3px 11px;
       border-radius: 99px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      border: 1px solid currentColor;
     }
-    .stage-pill.teach { background: rgba(192,132,252,0.18); color: var(--purple); }
-    .stage-pill.read { background: rgba(34,211,238,0.16); color: var(--cyan); }
-    .stage-pill.spell { background: rgba(251,191,36,0.16); color: var(--gold); }
-    .stage-pill.done { background: rgba(52,211,153,0.15); color: var(--good); }
+    .stage-pill.teach { color: var(--purple); }
+    .stage-pill.read  { color: var(--cyan); }
+    .stage-pill.spell { color: var(--gold); }
+    .stage-pill.done  { color: var(--good); }
     .en-big {
-      font-size: 1.7rem;
-      font-weight: 750;
-      line-height: 1.25;
-      margin: 8px 0 6px;
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.85rem;
+      font-weight: 600;
+      line-height: 1.28;
+      letter-spacing: 0.01em;
+      margin: 10px 0 6px;
       word-break: break-word;
     }
     .prompt-zh {
-      font-size: 1.3rem;
-      font-weight: 650;
-      margin: 8px 0 6px;
-      line-height: 1.35;
+      font-family: "Songti SC", "Noto Serif SC", Georgia, serif;
+      font-size: 1.36rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin: 10px 0 6px;
+      line-height: 1.45;
     }
-    .prompt-meta { color: var(--muted); font-size: 0.86rem; margin-bottom: 4px; }
+    .prompt-meta { color: var(--muted); font-size: 0.82rem; margin-bottom: 4px; letter-spacing: 0.04em; }
     .prompt-ipa {
       color: var(--gold);
-      font-size: 1.05rem;
-      margin-bottom: 10px;
-      letter-spacing: 0.02em;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      letter-spacing: 0.03em;
     }
     .example {
       color: var(--muted);
-      font-size: 0.88rem;
-      margin-top: 10px;
-      padding: 10px 12px;
+      font-size: 0.87rem;
+      font-style: italic;
+      margin-top: 12px;
+      padding: 11px 14px;
       background: var(--card2);
-      border-radius: 10px;
+      border-left: 2px solid var(--accent-line);
+      border-radius: 0 8px 8px 0;
     }
     .hint-line {
       font-size: 0.9rem;
@@ -253,163 +381,211 @@
       min-height: 1.4em;
       margin-bottom: 10px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
     }
     input#answer {
       width: 100%;
-      font-size: 1.12rem;
-      padding: 14px;
-      border-radius: 12px;
+      font-size: 1.1rem;
+      padding: 13px 14px;
+      border-radius: 10px;
       border: 1px solid var(--line);
       background: var(--card2);
       color: var(--text);
       outline: none;
+      transition: border-color 0.2s;
     }
     input#answer:focus { border-color: var(--accent); }
-    input#answer.ok { border-color: var(--good); background: rgba(52,211,153,0.08); }
-    input#answer.bad { border-color: var(--bad); background: rgba(251,113,133,0.08); }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    input#answer.ok { border-color: var(--good); }
+    input#answer.bad { border-color: var(--bad); }
+
+    /* —— 按钮 —— */
+    .actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }
     .btn.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-color: transparent; color: #fff; font-weight: 650;
-      box-shadow: 0 4px 14px rgba(124,108,255,0.35);
+      background: var(--accent); border-color: transparent;
+      color: var(--card); font-weight: 600;
+      box-shadow: var(--shadow-soft);
     }
-    .btn.good { background: rgba(52,211,153,0.14); border-color: var(--good); color: var(--good); font-weight: 650; }
-    .btn.bad { background: rgba(251,113,133,0.12); border-color: var(--bad); color: var(--bad); font-weight: 650; }
+    .btn.good { background: transparent; border-color: var(--good); color: var(--good); font-weight: 600; }
+    .btn.bad  { background: transparent; border-color: var(--bad);  color: var(--bad);  font-weight: 600; }
     .btn.ghost { background: var(--card2); }
     .btn.wide { flex: 1; min-width: 120px; text-align: center; padding: 12px 14px; }
+
+    /* —— 反馈 —— */
     .feedback {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 0.92rem;
+      margin-top: 14px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-size: 0.9rem;
       display: none;
+      border-left: 2px solid transparent;
     }
     .feedback.show { display: block; }
-    .feedback.ok { background: rgba(52,211,153,0.12); color: var(--good); }
-    .feedback.bad { background: rgba(251,113,133,0.12); color: #ffc0c8; }
-    .feedback .ans { color: var(--text); font-weight: 650; margin-top: 4px; }
+    .feedback.ok  { background: var(--card2); border-left-color: var(--good); color: var(--good); }
+    .feedback.bad { background: var(--card2); border-left-color: var(--bad);  color: var(--bad); }
+    .feedback .ans { color: var(--text); font-weight: 600; margin-top: 4px; }
+
+    /* —— 进度 —— */
     .progress-mini {
       color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 8px;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 9px;
       display: flex;
       justify-content: space-between;
       gap: 8px;
     }
     .session-bar {
-      height: 6px;
-      background: var(--card2);
+      height: 3px;
+      background: var(--line-soft);
       border-radius: 99px;
       overflow: hidden;
-      margin-bottom: 10px;
+      margin-bottom: 11px;
     }
     .session-bar i {
       display: block; height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--purple), var(--good));
-      transition: width 0.25s;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.3s;
     }
     .flow-tip {
-      font-size: 0.8rem;
+      font-size: 0.79rem;
       color: var(--muted);
-      background: var(--card2);
-      border-radius: 10px;
-      padding: 8px 12px;
-      margin-bottom: 12px;
+      line-height: 1.7;
+      border-left: 2px solid var(--line);
+      padding: 2px 0 2px 12px;
+      margin-bottom: 14px;
+      letter-spacing: 0.03em;
     }
+
+    /* —— 列表 —— */
     .bank-list, .weak-list {
       max-height: 460px;
       overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 14px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--r-md);
+      background: var(--card);
+      box-shadow: var(--shadow-soft);
     }
     .bank-item {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line-soft);
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 3px 10px;
       font-size: 0.9rem;
     }
     .bank-item:last-child { border-bottom: 0; }
-    .bank-item .en { font-weight: 650; }
+    .bank-item .en { font-weight: 600; font-family: Georgia, "Times New Roman", serif; }
     .bank-item .zh { color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1; }
-    .bank-item .tag { font-size: 0.72rem; color: var(--accent2); text-align: right; }
+    .bank-item .tag { font-size: 0.71rem; color: var(--accent); text-align: right; letter-spacing: 0.04em; }
     .bank-item.mastered .en { color: var(--good); }
     .bank-item.weak .en { color: var(--bad); }
-    .meters {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; grid-column: 1 / -1;
-    }
+    .meters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; grid-column: 1 / -1; }
     .meter {
-      font-size: 0.72rem;
-      padding: 2px 8px;
+      font-size: 0.71rem;
+      padding: 1px 9px;
       border-radius: 99px;
       background: var(--card2);
       color: var(--muted);
+      letter-spacing: 0.03em;
     }
-    .meter.bad { color: var(--bad); background: rgba(251,113,133,0.12); }
-    .meter.ok { color: var(--good); background: rgba(52,211,153,0.12); }
+    .meter.bad { color: var(--bad); }
+    .meter.ok { color: var(--good); }
+
+    /* —— 设置 —— */
     textarea#importBox {
       width: 100%; min-height: 110px;
       background: var(--card2); border: 1px solid var(--line);
-      border-radius: 12px; color: var(--text); padding: 12px;
+      border-radius: 10px; color: var(--text); padding: 12px;
       font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; margin: 10px 0;
     }
     .help {
-      color: var(--muted); font-size: 0.85rem;
-      background: var(--card); border: 1px dashed var(--line);
-      border-radius: 12px; padding: 12px 14px;
+      color: var(--muted); font-size: 0.84rem; line-height: 1.8;
+      background: var(--card); border: 1px solid var(--line-soft);
+      border-radius: var(--r-md); padding: 15px 17px;
+      box-shadow: var(--shadow-soft);
     }
+    .help b { color: var(--text); font-weight: 600; letter-spacing: 0.04em; }
     .help code {
       background: var(--card2); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem;
     }
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 13px 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .setting-row:last-of-type { border-bottom: 0; }
+    .setting-row .label { font-size: 0.88rem; }
+    .setting-row .label span { display: block; font-size: 0.74rem; color: var(--muted); }
+    .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .seg button {
+      border: 0; background: transparent; color: var(--muted);
+      padding: 6px 14px; font-size: 0.79rem; cursor: pointer;
+      letter-spacing: 0.04em; transition: background 0.2s, color 0.2s;
+    }
+    .seg button.on { background: var(--accent); color: var(--card); font-weight: 600; }
+
+    /* —— 安装提示 —— */
     .install-banner {
       display: none;
-      background: linear-gradient(135deg, #241c4d, #163a44);
+      background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      font-size: 0.88rem;
+      border-left: 3px solid var(--accent2);
+      border-radius: var(--r-md);
+      padding: 13px 15px;
+      margin-bottom: 13px;
+      font-size: 0.86rem;
     }
     .install-banner.show { display: block; }
-    .install-banner b { color: var(--gold); }
+    .install-banner b { color: var(--accent2); }
     .install-banner .row {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center;
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 11px; align-items: center;
     }
     .install-banner .close {
       margin-left: auto; background: transparent; border: 0;
-      color: var(--muted); font-size: 0.85rem; cursor: pointer;
+      color: var(--muted); font-size: 0.83rem; cursor: pointer;
     }
     @media (display-mode: standalone) {
       .install-banner { display: none !important; }
     }
-    .empty {
-      text-align: center; color: var(--muted); padding: 40px 12px;
+
+    .empty { text-align: center; color: var(--muted); padding: 44px 12px; }
+    .empty h3 { color: var(--text); margin: 0 0 8px; font-weight: 600; letter-spacing: 0.04em; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
     }
-    .empty h3 { color: var(--text); margin: 0 0 8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
+
+    <div class="topbar">
+      <button class="icon-btn" id="btnTheme" type="button" title="切换日间/夜间">
+        <span id="themeIcon">🌙</span><span id="themeText" data-i18n="theme.dark">夜间</span>
+      </button>
+      <button class="icon-btn" id="btnLang" type="button" title="切换界面语言">
+        <span>🌐</span><span id="langText">EN</span>
+      </button>
+    </div>
+
     <div class="install-banner" id="installBanner">
-      <div><b>装到手机主屏幕</b>，像 App 一样用</div>
+      <div><b data-i18n="install.title">装到手机主屏幕</b><span data-i18n="install.sub">，像 App 一样用</span></div>
       <div id="installIosHint" style="display:none;margin-top:8px;color:var(--muted)">
-        iPhone：Safari 打开 → 分享 → <b style="color:var(--text)">添加到主屏幕</b>
+        <span data-i18n="install.ios">iPhone：Safari 打开 → 分享 → 添加到主屏幕</span>
       </div>
       <div class="row">
-        <button class="btn primary" id="btnInstall" style="display:none">安装到桌面</button>
-        <button class="btn ghost" id="btnShowIos">iPhone 怎么装？</button>
-        <button class="close" id="btnDismissInstall" type="button">先不用</button>
+        <button class="btn primary" id="btnInstall" style="display:none" data-i18n="install.btn">安装到桌面</button>
+        <button class="btn ghost" id="btnShowIos" data-i18n="install.how">iPhone 怎么装？</button>
+        <button class="close" id="btnDismissInstall" type="button" data-i18n="install.later">先不用</button>
       </div>
     </div>
 
     <header class="hero">
       <div class="hero-top">
-        <div class="hero-logo">📚</div>
+        <div class="hero-logo">雅</div>
         <div>
-          <h1>雅思词库 · 刷词</h1>
-          <p>先认读 → 再拼写 · 自动追踪薄弱词</p>
+          <h1 class="serif" data-i18n="app.title">雅思词库 · 刷词</h1>
+          <p data-i18n="app.subtitle">先认读 → 再拼写 · 自动追踪薄弱词</p>
         </div>
       </div>
       <div class="hero-progress">
@@ -422,18 +598,18 @@
     </header>
 
     <div class="stats">
-      <div class="stat total"><b id="sTotal">0</b><span>词库</span></div>
-      <div class="stat new"><b id="sNew">0</b><span>未认读</span></div>
-      <div class="stat weak"><b id="sWeak">0</b><span>薄弱</span></div>
-      <div class="stat done"><b id="sMastered">0</b><span>已掌握</span></div>
+      <div class="stat total"><b id="sTotal">0</b><span data-i18n="stat.total">词库</span></div>
+      <div class="stat new"><b id="sNew">0</b><span data-i18n="stat.new">未认读</span></div>
+      <div class="stat weak"><b id="sWeak">0</b><span data-i18n="stat.weak">薄弱</span></div>
+      <div class="stat done"><b id="sMastered">0</b><span data-i18n="stat.mastered">已掌握</span></div>
     </div>
 
     <div class="tabs">
-      <button class="tab active" data-panel="learn">🧠 学习</button>
-      <button class="tab" data-panel="chapters">📚 章节选择</button>
-      <button class="tab" data-panel="weak">📉 薄弱</button>
-      <button class="tab" data-panel="bank">📋 词库</button>
-      <button class="tab" data-panel="settings">⚙ 设置</button>
+      <button class="tab active" data-panel="learn" data-i18n="tab.learn">🧠 学习</button>
+      <button class="tab" data-panel="chapters" data-i18n="tab.chapters">📚 章节选择</button>
+      <button class="tab" data-panel="weak" data-i18n="tab.weak">📉 薄弱</button>
+      <button class="tab" data-panel="bank" data-i18n="tab.bank">📋 词库</button>
+      <button class="tab" data-panel="settings" data-i18n="tab.settings">⚙ 设置</button>
     </div>
 
     <div class="chapter-badge" id="chapterBadge">当前章节：全部章节</div>
@@ -442,28 +618,28 @@
 
     <!-- CHAPTER SELECTOR -->
     <section id="chapters" class="panel">
-      <div class="flow-tip">你可以选择具体章节复习，也可以打乱所有章节随机刷词。</div>
+      <div class="flow-tip" data-i18n="chapters.tip">你可以选择具体章节复习，也可以打乱所有章节随机刷词。</div>
       <div class="chapter-list" id="chapterList"></div>
       <div class="actions" style="margin-top:12px">
-        <button class="shuffle-btn" id="btnShuffle">🔀 打乱章节</button>
-        <button class="btn ghost" id="btnReviewAll">复习全部</button>
+        <button class="shuffle-btn" id="btnShuffle" data-i18n="chapters.shuffle">🔀 打乱章节</button>
+        <button class="btn ghost" id="btnReviewAll" data-i18n="chapters.all">复习全部</button>
       </div>
     </section>
 
     <!-- LEARN -->
     <section id="learn" class="panel active">
-      <div class="flow-tip" id="flowTip">
+      <div class="flow-tip" id="flowTip" data-i18n="learn.tipDefault">
         智能路径：新词先认读教学 → 认读自测 → 拼写。错得多的词会更常出现。
       </div>
       <div class="session-bar"><i id="sessBar"></i></div>
       <div class="progress-mini">
         <span id="sessText">准备中</span>
-        <span id="sessScore">认对0 认错0 · 拼对0 拼错0</span>
+        <span id="sessScore"></span>
       </div>
       <div class="card" id="learnCard">
         <div class="empty" id="learnEmpty" style="display:none">
-          <h3>本轮没有词了</h3>
-          <p>换个筛选，或点「开始一轮」</p>
+          <h3 data-i18n="learn.emptyTitle">本轮没有词了</h3>
+          <p data-i18n="learn.emptyBody">换个筛选，或点「开始一轮」</p>
         </div>
         <div id="learnBody">
           <div class="stage-pill teach" id="stagePill">① 认读教学</div>
@@ -474,49 +650,74 @@
         </div>
       </div>
       <div class="actions" style="margin-top:12px">
-        <button class="btn good" id="btnStartRound">开始一轮</button>
-        <button class="btn ghost" id="btnWeakRound">专练薄弱词</button>
+        <button class="btn good" id="btnStartRound" data-i18n="learn.start">开始一轮</button>
+        <button class="btn ghost" id="btnWeakRound" data-i18n="learn.weakRound">专练薄弱词</button>
       </div>
     </section>
 
     <!-- WEAK -->
     <section id="weak" class="panel">
-      <div class="flow-tip">按「拼错 + 认错」加权排序。拼错权重更高。点「练这个」进入学习。</div>
+      <div class="flow-tip" data-i18n="weak.tip">按「拼错 + 认错」加权排序，拼错权重更高。</div>
       <div class="weak-list" id="weakList"></div>
     </section>
 
     <!-- BANK -->
     <section id="bank" class="panel">
-      <div class="actions" style="margin-bottom:10px">
-        <button class="btn ghost" id="btnExport">导出词库 JSON</button>
-        <button class="btn ghost" id="btnExportProgress">导出进度</button>
+      <div class="actions" style="margin-bottom:10px;margin-top:0">
+        <button class="btn ghost" id="btnExport" data-i18n="bank.exportBank">导出词库 JSON</button>
+        <button class="btn ghost" id="btnExportProgress" data-i18n="bank.exportProgress">导出进度</button>
       </div>
       <div class="bank-list" id="bankList"></div>
     </section>
 
     <!-- SETTINGS -->
     <section id="settings" class="panel">
+      <div class="help" style="margin-bottom:14px">
+        <div class="setting-row">
+          <div class="label">
+            <span style="color:var(--text);font-size:0.88rem" data-i18n="settings.themeLabel">外观</span>
+            <span data-i18n="settings.themeHint">昼·纸 / 夜·墨</span>
+          </div>
+          <div class="seg" id="segTheme">
+            <button data-theme-opt="light" data-i18n="settings.light">昼</button>
+            <button data-theme-opt="dark" data-i18n="settings.dark">夜</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="label">
+            <span style="color:var(--text);font-size:0.88rem" data-i18n="settings.langLabel">界面语言</span>
+            <span data-i18n="settings.langHint">词条释义仍为中文</span>
+          </div>
+          <div class="seg" id="segLang">
+            <button data-lang-opt="zh">中文</button>
+            <button data-lang-opt="en">English</button>
+          </div>
+        </div>
+      </div>
+
       <div class="help">
-        <p style="margin:0 0 8px"><b>记忆模式怎么工作</b></p>
+        <p style="margin:0 0 8px"><b data-i18n="settings.howTitle">记忆模式怎么工作</b></p>
         <ul style="margin:0;padding-left:1.2em">
-          <li><b>① 认读教学</b>：展示英文+音标+中文+例句，自动读音（新词必走）</li>
-          <li><b>② 认读自测</b>：只给中文，你点「认识 / 不认识」→ 统计认对/认错</li>
-          <li><b>③ 拼写</b>：看中文写英文 → 统计拼对/拼错</li>
-          <li>错词会插回队列、提高出现权重；掌握后降低出现频率</li>
+          <li data-i18n="settings.how1">① 认读教学：展示英文+音标+中文+例句，自动读音（新词必走）</li>
+          <li data-i18n="settings.how2">② 认读自测：只给中文，你点「认识 / 不认识」→ 统计认对/认错</li>
+          <li data-i18n="settings.how3">③ 拼写：看中文写英文 → 统计拼对/拼错</li>
+          <li data-i18n="settings.how4">错词会插回队列、提高出现权重；掌握后降低出现频率</li>
         </ul>
-        <p style="margin:12px 0 8px"><b>线上地址</b></p>
+        <p style="margin:12px 0 8px"><b data-i18n="settings.urlTitle">线上地址</b></p>
         <p style="margin:0" id="onlineUrl">—</p>
-        <p style="margin:12px 0 8px"><b>手机安装</b></p>
+        <p style="margin:12px 0 8px"><b data-i18n="settings.installTitle">手机安装</b></p>
         <ul style="margin:0;padding-left:1.2em">
-          <li>iPhone：Safari → 分享 → 添加到主屏幕</li>
-          <li>安卓：Chrome → 安装应用 / 添加到主屏幕</li>
+          <li data-i18n="settings.install1">iPhone：Safari → 分享 → 添加到主屏幕</li>
+          <li data-i18n="settings.install2">安卓：Chrome → 安装应用 / 添加到主屏幕</li>
         </ul>
       </div>
-      <label style="display:block;margin:14px 0 6px;color:var(--muted);font-size:0.85rem">导入单词 JSON</label>
+      <label style="display:block;margin:14px 0 6px;color:var(--muted);font-size:0.85rem"
+             data-i18n="settings.importLabel">导入单词 JSON</label>
       <textarea id="importBox" placeholder='[{"en":"example","ipa":"/…/","pos":"n.","zh":"例子","example":"…","tags":["custom"],"star":true}]'></textarea>
-      <div class="actions">
-        <button class="btn primary" id="btnImport">合并导入</button>
-        <button class="btn" style="border-color:var(--warn);color:var(--warn)" id="btnResetProgress">清空学习进度</button>
+      <div class="actions" style="margin-top:0">
+        <button class="btn primary" id="btnImport" data-i18n="settings.import">合并导入</button>
+        <button class="btn" style="border-color:var(--warn);color:var(--warn)" id="btnResetProgress"
+                data-i18n="settings.reset">清空学习进度</button>
       </div>
     </section>
   </div>
@@ -575,12 +776,13 @@
       return t ? t.toLowerCase() : "other";
     }
     function chapterLabel(id) {
-      if (id === "all") return "全部章节";
-      if (id === "other") return "其他 / 自定义词";
-      const titles = window.VOCAB_CHAPTERS || {};
+      if (id === "all") return t("ch.all");
+      if (id === "other") return t("ch.other");
+      const titles = (lang === "en" && window.VOCAB_CHAPTERS_EN)
+        ? window.VOCAB_CHAPTERS_EN
+        : (window.VOCAB_CHAPTERS || {});
       if (titles[id]) return titles[id];
-      const n = id.replace(/^day/i, "");
-      return `Day ${n}`;
+      return t("ch.day", { n: id.replace(/^day/i, "") });
     }
     /** 章节列表（按 dayN 数字排序，other 垫底） */
     function chapterStats() {
@@ -702,17 +904,17 @@
       document.getElementById("heroBar").style.width = pct + "%";
       document.getElementById("heroPct").textContent = `${nMastered}/${all.length} · ${pct}%`;
       document.getElementById("heroLabel").textContent =
-        chapter === "all" ? "全部章节 · 掌握进度" : `${chapterLabel(chapter)} · 掌握进度`;
+        t("hero.progress", { x: chapterLabel(chapter) });
     }
 
     // —— filters ——
     const FILTERS = [
-      { id: "all", label: "全部" },
-      { id: "new", label: "未认读" },
-      { id: "core", label: "核心6词" },
-      { id: "star", label: "★重点" },
-      { id: "hard", label: "薄弱" },
-      { id: "mastered", label: "已掌握" },
+      { id: "all", key: "filter.all" },
+      { id: "new", key: "filter.new" },
+      { id: "core", key: "filter.core" },
+      { id: "star", key: "filter.star" },
+      { id: "hard", key: "filter.hard" },
+      { id: "mastered", key: "filter.mastered" },
     ];
     function renderFilters() {
       const el = document.getElementById("filters");
@@ -720,7 +922,7 @@
       FILTERS.forEach(f => {
         const b = document.createElement("button");
         b.className = "chip" + (filter === f.id ? " on" : "");
-        b.textContent = f.label;
+        b.textContent = t(f.key);
         b.onclick = () => {
           filter = f.id;
           weakOnly = false;
@@ -755,7 +957,7 @@
       const total = allWords().length;
       const allRow = {
         id: "all",
-        label: "全部章节",
+        label: t("ch.all"),
         total,
         mastered: allWords().filter(w => getProg(w.en).mastered).length,
         fresh: allWords().filter(w => !getProg(w.en).introduced).length
@@ -764,12 +966,12 @@
         <div class="chapter-item${chapter === c.id ? " active" : ""}" data-chapter="${escapeHtml(c.id)}">
           <div>${escapeHtml(c.label)}</div>
           <div class="meters">
-            <span class="meter">${c.total} 词</span>
-            <span class="meter ${c.fresh ? "" : "ok"}">未认读 ${c.fresh}</span>
-            <span class="meter ok">已掌握 ${c.mastered}</span>
+            <span class="meter">${t("ch.words", { n: c.total })}</span>
+            <span class="meter ${c.fresh ? "" : "ok"}">${t("ch.fresh", { n: c.fresh })}</span>
+            <span class="meter ok">${t("ch.mastered", { n: c.mastered })}</span>
           </div>
         </div>
-      `).join("") || `<div class="chapter-item">词库为空</div>`;
+      `).join("") || `<div class="chapter-item">${t("bank.empty")}</div>`;
 
       el.querySelectorAll(".chapter-item[data-chapter]").forEach(item => {
         item.onclick = () => {
@@ -788,7 +990,8 @@
     function updateChapterBadge() {
       const el = document.getElementById("chapterBadge");
       if (!el) return;
-      el.textContent = `当前章节：${chapterLabel(chapter)}${shuffleMode ? " · 🔀 打乱" : ""}`;
+      el.textContent = t("badge.current", { x: chapterLabel(chapter) })
+        + (shuffleMode ? t("badge.shuffle") : "");
     }
     document.getElementById("btnShuffle").onclick = () => {
       setChapter("all");
@@ -904,10 +1107,12 @@
       const total = session.queue.length;
       const done = Math.min(session.index, total);
       document.getElementById("sessText").textContent = total
-        ? `本轮进度 ${done}/${total}`
-        : "本轮无题目";
-      document.getElementById("sessScore").textContent =
-        `认对${session.readOk} 认错${session.readWrong} · 拼对${session.spellOk} 拼错${session.spellWrong}`;
+        ? t("sess.progress", { a: done, b: total })
+        : t("sess.empty");
+      document.getElementById("sessScore").textContent = t("sess.score", {
+        a: session.readOk, b: session.readWrong,
+        c: session.spellOk, d: session.spellWrong
+      });
       document.getElementById("sessBar").style.width = total ? `${(done / total) * 100}%` : "0%";
     }
 
@@ -926,9 +1131,7 @@
         empty.style.display = "block";
         body.style.display = "none";
         document.getElementById("flowTip").textContent =
-          session.queue.length
-            ? "本轮完成！可再点「开始一轮」，系统会更偏向你的错词。"
-            : "当前筛选下没有词。换「全部」或「未认读」试试。";
+          session.queue.length ? t("learn.tipDone") : t("learn.tipNone");
         return;
       }
       empty.style.display = "none";
@@ -941,13 +1144,13 @@
       const actions = document.getElementById("learnActions");
       const p = getProg(w.en);
 
-      meta.textContent = `${w.pos || ""}${w.star ? " · ★重点" : ""} · 拼错${p.spellWrong} 认错${p.readWrong}`;
+      meta.textContent = `${w.pos || ""}${w.star ? " · " + t("meta.star") : ""} · `
+        + t("meta.stats", { a: p.spellWrong, b: p.readWrong });
 
       if (item.mode === "teach") {
         pill.className = "stage-pill teach";
-        pill.textContent = "① 认读教学 · 先跟读";
-        document.getElementById("flowTip").textContent =
-          "先认读：看词、听音、看中文。点「记住了」进入下一步。";
+        pill.textContent = t("pill.teach");
+        document.getElementById("flowTip").textContent = t("learn.tipTeach");
         main.innerHTML = `
           <div class="en-big">${escapeHtml(w.en)}</div>
           <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
@@ -955,8 +1158,8 @@
           ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
         `;
         actions.innerHTML = `
-          <button class="btn ghost" id="btnSpeakNow">🔊 再听一遍</button>
-          <button class="btn primary wide" id="btnTaught">记住了，下一个</button>
+          <button class="btn ghost" id="btnSpeakNow">${t("btn.listen")}</button>
+          <button class="btn primary wide" id="btnTaught">${t("btn.gotIt")}</button>
         `;
         setTimeout(() => speak(w.en), 200);
         document.getElementById("btnSpeakNow").onclick = () => speak(w.en);
@@ -969,12 +1172,11 @@
         };
       } else if (item.mode === "read") {
         pill.className = "stage-pill read";
-        pill.textContent = "② 认读自测 · 你认识吗？";
-        document.getElementById("flowTip").textContent =
-          "只看中文：认识就点「认识」，不熟点「不认识」。会分别计入认对/认错。";
+        pill.textContent = t("pill.read");
+        document.getElementById("flowTip").textContent = t("learn.tipRead");
         main.innerHTML = `
           <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
-          <div class="prompt-meta">想一想英文是什么，再作答</div>
+          <div class="prompt-meta">${t("read.think")}</div>
           <div id="readReveal" style="display:none;margin-top:12px">
             <div class="en-big">${escapeHtml(w.en)}</div>
             <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
@@ -982,30 +1184,29 @@
           </div>
         `;
         actions.innerHTML = `
-          <button class="btn bad wide" id="btnReadNo">不认识</button>
-          <button class="btn good wide" id="btnReadYes">认识</button>
-          <button class="btn ghost" id="btnReadSpeak" style="display:none">🔊 读音</button>
-          <button class="btn primary wide" id="btnReadNext" style="display:none">继续</button>
+          <button class="btn bad wide" id="btnReadNo">${t("btn.dontKnow")}</button>
+          <button class="btn good wide" id="btnReadYes">${t("btn.know")}</button>
+          <button class="btn ghost" id="btnReadSpeak" style="display:none">${t("btn.speak")}</button>
+          <button class="btn primary wide" id="btnReadNext" style="display:none">${t("btn.next")}</button>
         `;
         document.getElementById("btnReadYes").onclick = () => gradeRead(true);
         document.getElementById("btnReadNo").onclick = () => gradeRead(false);
       } else {
         // spell
         pill.className = "stage-pill spell";
-        pill.textContent = "③ 拼写练习 · 写出英文";
-        document.getElementById("flowTip").textContent =
-          "根据中文写出英文（大小写不限）。错词会自动记入薄弱并稍后重练。";
+        pill.textContent = t("pill.spell");
+        document.getElementById("flowTip").textContent = t("learn.tipSpell");
         main.innerHTML = `
           <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
-          <div class="prompt-ipa" id="spellIpaHint" style="opacity:0.55">${escapeHtml(w.ipa || "（音标提示）")}</div>
+          <div class="prompt-ipa" id="spellIpaHint" style="opacity:0.55">${escapeHtml(w.ipa || t("spell.ipaHint"))}</div>
           <div class="hint-line" id="spellHint"></div>
-          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="输入英文拼写…" />
+          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("spell.placeholder")}" />
         `;
         actions.innerHTML = `
-          <button class="btn primary" id="btnCheck">检查 ↩</button>
-          <button class="btn ghost" id="btnHint">提示</button>
-          <button class="btn ghost" id="btnSpellSpeak">🔊 读音</button>
-          <button class="btn ghost" id="btnSpellSkip">跳过</button>
+          <button class="btn primary" id="btnCheck">${t("btn.check")}</button>
+          <button class="btn ghost" id="btnHint">${t("btn.hint")}</button>
+          <button class="btn ghost" id="btnSpellSpeak">${t("btn.speak")}</button>
+          <button class="btn ghost" id="btnSpellSkip">${t("btn.skip")}</button>
         `;
         const input = document.getElementById("answer");
         setTimeout(() => input && input.focus(), 80);
@@ -1061,14 +1262,14 @@
         pr.readOk += 1;
         session.readOk += 1;
         fb.className = "feedback show ok";
-        fb.innerHTML = `✓ 记为「认识」<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
+        fb.innerHTML = `${t("fb.readOk")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
         speak(w.en);
       } else {
         pr.readWrong += 1;
         pr.mastered = false;
         session.readWrong += 1;
         fb.className = "feedback show bad";
-        fb.innerHTML = `已记「不认识」· 再跟读一遍<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
+        fb.innerHTML = `${t("fb.readNo")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
         speak(w.en);
         // 不认识：插回教学 + 再测
         requeueWrong({ word: w, mode: "teach" });
@@ -1104,9 +1305,9 @@
         session.spellOk += 1;
         recomputeMastered(w.en);
         fb.className = "feedback show ok";
-        fb.innerHTML = `✓ 拼写正确<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+        fb.innerHTML = `${t("fb.spellOk")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
           ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
-          <div class="example" style="margin-top:6px">回车继续</div>`;
+          <div class="example" style="margin-top:6px">${t("fb.enter")}</div>`;
         speak(w.en);
       } else {
         input.className = "bad";
@@ -1114,10 +1315,10 @@
         pr.mastered = false;
         session.spellWrong += 1;
         fb.className = "feedback show bad";
-        fb.innerHTML = `✗ 拼写错误<div class="ans">答案：${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
-          <div class="example">你写的：${escapeHtml(input.value)}</div>
+        fb.innerHTML = `${t("fb.spellBad")}<div class="ans">${t("fb.answer")}${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+          <div class="example">${t("fb.yours")}${escapeHtml(input.value)}</div>
           ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
-          <div class="example" style="margin-top:6px">已加入薄弱重练 · 回车继续</div>`;
+          <div class="example" style="margin-top:6px">${t("fb.requeued")}</div>`;
         requeueWrong(item);
         // 拼错也加强认读
         if (Math.random() < 0.6) requeueWrong({ word: w, mode: "read" });
@@ -1178,18 +1379,18 @@
         .sort((a, b) => b.score - a.score);
       const el = document.getElementById("weakList");
       if (!list.length) {
-        el.innerHTML = `<div class="bank-item"><div class="zh">暂无薄弱词，先去「学习」认读新词吧。</div></div>`;
+        el.innerHTML = `<div class="bank-item"><div class="zh">${t("weak.empty")}</div></div>`;
         return;
       }
       el.innerHTML = list.map(({ w, p, score }) => `
         <div class="bank-item weak">
           <div class="en">${escapeHtml(w.en)} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${escapeHtml(w.ipa || "")}</span></div>
-          <div class="tag">权重 ${score.toFixed(1)}</div>
+          <div class="tag">${t("weak.score", { x: score.toFixed(1) })}</div>
           <div class="zh">${escapeHtml(w.pos || "")} · ${escapeHtml(w.zh || "")}</div>
           <div class="meters">
-            <span class="meter ${p.readWrong ? "bad" : "ok"}">认错 ${p.readWrong} / 认对 ${p.readOk}</span>
-            <span class="meter ${p.spellWrong ? "bad" : "ok"}">拼错 ${p.spellWrong} / 拼对 ${p.spellOk}</span>
-            <span class="meter">${p.introduced ? (p.mastered ? "已掌握" : "学习中") : "未认读"}</span>
+            <span class="meter ${p.readWrong ? "bad" : "ok"}">${t("weak.read", { a: p.readWrong, b: p.readOk })}</span>
+            <span class="meter ${p.spellWrong ? "bad" : "ok"}">${t("weak.spell", { a: p.spellWrong, b: p.spellOk })}</span>
+            <span class="meter">${p.introduced ? (p.mastered ? t("status.mastered") : t("status.learning")) : t("status.new")}</span>
           </div>
         </div>
       `).join("");
@@ -1204,14 +1405,14 @@
         const cls = p.mastered ? "mastered" : (isWeak(w.en) ? "weak" : "");
         return `<div class="bank-item ${cls}">
           <div class="en">${escapeHtml(w.en)} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${escapeHtml(w.ipa || "")}</span></div>
-          <div class="tag">${p.mastered ? "已掌握" : (p.introduced ? "学习中" : "未认读")}</div>
+          <div class="tag">${p.mastered ? t("status.mastered") : (p.introduced ? t("status.learning") : t("status.new"))}</div>
           <div class="zh">${escapeHtml(w.pos || "")} · ${escapeHtml(w.zh || "")}</div>
           <div class="meters">
-            <span class="meter ${p.readWrong ? "bad" : ""}">认 ${p.readOk}/${p.readWrong}</span>
-            <span class="meter ${p.spellWrong ? "bad" : ""}">拼 ${p.spellOk}/${p.spellWrong}</span>
+            <span class="meter ${p.readWrong ? "bad" : ""}">${t("bank.read", { a: p.readOk, b: p.readWrong })}</span>
+            <span class="meter ${p.spellWrong ? "bad" : ""}">${t("bank.spell", { a: p.spellOk, b: p.spellWrong })}</span>
           </div>
         </div>`;
-      }).join("") || `<div class="bank-item"><div class="zh">暂无</div></div>`;
+      }).join("") || `<div class="bank-item"><div class="zh">${t("bank.empty")}</div></div>`;
     }
 
     document.getElementById("btnExport").onclick = () => {
@@ -1231,23 +1432,23 @@
     document.getElementById("btnImport").onclick = () => {
       try {
         const arr = JSON.parse(document.getElementById("importBox").value);
-        if (!Array.isArray(arr)) throw new Error("需要 JSON 数组");
+        if (!Array.isArray(arr)) throw new Error(t("alert.needArray"));
         const custom = loadCustom();
         const map = new Map(custom.map(w => [normKey(w.en), w]));
         arr.forEach(w => { if (w && w.en) map.set(normKey(w.en), w); });
         saveCustom([...map.values()]);
-        alert(`已合并，自定义词 ${map.size} 条`);
+        alert(t("alert.importOk", { n: map.size }));
         startRound();
         renderBank();
         renderWeak();
         updateStats();
       } catch (e) {
-        alert("导入失败：" + e.message);
+        alert(t("alert.importFail") + e.message);
       }
     };
 
     document.getElementById("btnResetProgress").onclick = () => {
-      if (!confirm("清空所有认读/拼写统计？词库保留。")) return;
+      if (!confirm(t("confirm.reset"))) return;
       progress = {};
       saveProgress();
       startRound();
@@ -1261,7 +1462,7 @@
     if (onlineEl) {
       onlineEl.innerHTML = location.protocol.startsWith("http")
         ? `<a href="${location.href}" style="color:var(--accent)">${location.href}</a>`
-        : "本地文件模式；线上见 GitHub Pages。";
+        : t("pwa.localMode");
     }
     let deferredPrompt = null;
     const banner = document.getElementById("installBanner");
@@ -1292,7 +1493,7 @@
     });
     document.getElementById("btnShowIos").addEventListener("click", () => {
       document.getElementById("installIosHint").style.display = "block";
-      if (!isIos) alert("iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。");
+      if (!isIos) alert(t("alert.iosHint"));
     });
     document.getElementById("btnDismissInstall").addEventListener("click", () => {
       localStorage.setItem("ielts_vocab_install_dismissed", "1");
@@ -1302,12 +1503,233 @@
       navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
 
+
+    // ============================================================
+    // 主题（昼/夜）与界面语言（中/EN）
+    // 词条释义本身始终保持中文——那是学习内容，不参与翻译
+    // ============================================================
+    const THEME_KEY = "ielts_vocab_theme_v1";
+    const LANG_KEY = "ielts_vocab_lang_v1";
+
+    const I18N = {
+      zh: {
+        "app.title": "雅思词库 · 刷词",
+        "app.subtitle": "先认读 → 再拼写 · 自动追踪薄弱词",
+        "stat.total": "词库", "stat.new": "未认读", "stat.weak": "薄弱", "stat.mastered": "已掌握",
+        "tab.learn": "🧠 学习", "tab.chapters": "📚 章节选择", "tab.weak": "📉 薄弱",
+        "tab.bank": "📋 词库", "tab.settings": "⚙ 设置",
+        "filter.all": "全部", "filter.new": "未认读", "filter.core": "核心6词",
+        "filter.star": "★重点", "filter.hard": "薄弱", "filter.mastered": "已掌握",
+        "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
+        "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
+        "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
+        "hero.progress": "{x} · 掌握进度",
+        "chapters.tip": "你可以选择具体章节复习，也可以打乱所有章节随机刷词。",
+        "chapters.shuffle": "🔀 打乱章节", "chapters.all": "复习全部",
+        "sess.progress": "本轮进度 {a}/{b}", "sess.empty": "本轮无题目",
+        "sess.score": "认对{a} 认错{b} · 拼对{c} 拼错{d}",
+        "learn.tipDefault": "智能路径：新词先认读教学 → 认读自测 → 拼写。错得多的词会更常出现。",
+        "learn.tipTeach": "先认读：看词、听音、看中文。点「记住了」进入下一步。",
+        "learn.tipRead": "只看中文：认识就点「认识」，不熟点「不认识」。会分别计入认对/认错。",
+        "learn.tipSpell": "根据中文写出英文（大小写不限）。错词会自动记入薄弱并稍后重练。",
+        "learn.tipDone": "本轮完成！可再点「开始一轮」，系统会更偏向你的错词。",
+        "learn.tipNone": "当前筛选下没有词。换「全部」或「未认读」试试。",
+        "learn.emptyTitle": "本轮没有词了", "learn.emptyBody": "换个筛选，或点「开始一轮」",
+        "learn.start": "开始一轮", "learn.weakRound": "专练薄弱词",
+        "pill.teach": "① 认读教学 · 先跟读",
+        "pill.read": "② 认读自测 · 你认识吗？",
+        "pill.spell": "③ 拼写练习 · 写出英文",
+        "meta.star": "★重点", "meta.stats": "拼错{a} 认错{b}",
+        "btn.listen": "🔊 再听一遍", "btn.gotIt": "记住了，下一个",
+        "btn.dontKnow": "不认识", "btn.know": "认识", "btn.speak": "🔊 读音", "btn.next": "继续",
+        "btn.check": "检查 ↩", "btn.hint": "提示", "btn.skip": "跳过",
+        "read.think": "想一想英文是什么，再作答",
+        "spell.placeholder": "输入英文拼写…", "spell.ipaHint": "（音标提示）",
+        "fb.readOk": "✓ 记为「认识」", "fb.readNo": "已记「不认识」· 再跟读一遍",
+        "fb.spellOk": "✓ 拼写正确", "fb.spellBad": "✗ 拼写错误",
+        "fb.answer": "答案：", "fb.yours": "你写的：",
+        "fb.enter": "回车继续", "fb.requeued": "已加入薄弱重练 · 回车继续",
+        "weak.tip": "按「拼错 + 认错」加权排序，拼错权重更高。",
+        "weak.empty": "暂无薄弱词，先去「学习」认读新词吧。",
+        "weak.score": "权重 {x}",
+        "weak.read": "认错 {a} / 认对 {b}", "weak.spell": "拼错 {a} / 拼对 {b}",
+        "status.mastered": "已掌握", "status.learning": "学习中", "status.new": "未认读",
+        "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.empty": "暂无",
+        "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度",
+        "settings.themeLabel": "外观", "settings.themeHint": "昼·纸 / 夜·墨",
+        "settings.light": "昼", "settings.dark": "夜",
+        "settings.langLabel": "界面语言", "settings.langHint": "词条释义仍为中文",
+        "settings.howTitle": "记忆模式怎么工作",
+        "settings.how1": "① 认读教学：展示英文+音标+中文+例句，自动读音（新词必走）",
+        "settings.how2": "② 认读自测：只给中文，你点「认识 / 不认识」→ 统计认对/认错",
+        "settings.how3": "③ 拼写：看中文写英文 → 统计拼对/拼错",
+        "settings.how4": "错词会插回队列、提高出现权重；掌握后降低出现频率",
+        "settings.urlTitle": "线上地址", "settings.installTitle": "手机安装",
+        "settings.install1": "iPhone：Safari → 分享 → 添加到主屏幕",
+        "settings.install2": "安卓：Chrome → 安装应用 / 添加到主屏幕",
+        "settings.importLabel": "导入单词 JSON",
+        "settings.import": "合并导入", "settings.reset": "清空学习进度",
+        "install.title": "装到手机主屏幕", "install.sub": "，像 App 一样用",
+        "install.ios": "iPhone：Safari 打开 → 分享 → 添加到主屏幕",
+        "install.btn": "安装到桌面", "install.how": "iPhone 怎么装？", "install.later": "先不用",
+        "theme.dark": "夜间", "theme.light": "日间",
+        "alert.importOk": "已合并，自定义词 {n} 条", "alert.importFail": "导入失败：",
+        "alert.needArray": "需要 JSON 数组",
+        "alert.iosHint": "iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。",
+        "confirm.reset": "清空所有认读/拼写统计？词库保留。",
+        "pwa.localMode": "本地文件模式；线上见 GitHub Pages。"
+      },
+      en: {
+        "app.title": "IELTS Vocabulary · Drill",
+        "app.subtitle": "Recognise → spell · weak words tracked for you",
+        "stat.total": "Words", "stat.new": "Unseen", "stat.weak": "Weak", "stat.mastered": "Mastered",
+        "tab.learn": "🧠 Learn", "tab.chapters": "📚 Chapters", "tab.weak": "📉 Weak",
+        "tab.bank": "📋 Words", "tab.settings": "⚙ Settings",
+        "filter.all": "All", "filter.new": "Unseen", "filter.core": "Core 6",
+        "filter.star": "★ Key", "filter.hard": "Weak", "filter.mastered": "Mastered",
+        "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
+        "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
+        "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
+        "hero.progress": "{x} · mastery",
+        "chapters.tip": "Pick one chapter to review, or shuffle every chapter together.",
+        "chapters.shuffle": "🔀 Shuffle all", "chapters.all": "Review all",
+        "sess.progress": "Round {a}/{b}", "sess.empty": "Nothing in this round",
+        "sess.score": "read ✓{a} ✗{b} · spell ✓{c} ✗{d}",
+        "learn.tipDefault": "Smart path: new words are taught, then recalled, then spelled. Mistakes come back more often.",
+        "learn.tipTeach": "Study it: word, audio, meaning. Tap “Got it” to continue.",
+        "learn.tipRead": "Meaning only — tap “I know it” or “Don’t know”. Both are tracked.",
+        "learn.tipSpell": "Type the English for the meaning (case-insensitive). Mistakes go to your weak list.",
+        "learn.tipDone": "Round complete! Start another — it will favour your mistakes.",
+        "learn.tipNone": "No words match this filter. Try “All” or “Unseen”.",
+        "learn.emptyTitle": "No words left in this round",
+        "learn.emptyBody": "Change the filter, or tap “Start a round”",
+        "learn.start": "Start a round", "learn.weakRound": "Drill weak words",
+        "pill.teach": "① Learn · listen and repeat",
+        "pill.read": "② Recall · do you know it?",
+        "pill.spell": "③ Spell · type the word",
+        "meta.star": "★ key", "meta.stats": "spell ✗{a} · read ✗{b}",
+        "btn.listen": "🔊 Listen again", "btn.gotIt": "Got it, next",
+        "btn.dontKnow": "Don’t know", "btn.know": "I know it",
+        "btn.speak": "🔊 Audio", "btn.next": "Continue",
+        "btn.check": "Check ↩", "btn.hint": "Hint", "btn.skip": "Skip",
+        "read.think": "Think of the English first, then answer",
+        "spell.placeholder": "Type the spelling…", "spell.ipaHint": "(IPA hint)",
+        "fb.readOk": "✓ Marked as known", "fb.readNo": "Marked as unknown · repeat after the audio",
+        "fb.spellOk": "✓ Correct", "fb.spellBad": "✗ Incorrect",
+        "fb.answer": "Answer: ", "fb.yours": "You typed: ",
+        "fb.enter": "Press Enter to continue",
+        "fb.requeued": "Added to weak words · Enter to continue",
+        "weak.tip": "Ranked by spelling and recall mistakes; spelling counts more.",
+        "weak.empty": "No weak words yet — go learn some in “Learn”.",
+        "weak.score": "priority {x}",
+        "weak.read": "read ✗{a} / ✓{b}", "weak.spell": "spell ✗{a} / ✓{b}",
+        "status.mastered": "Mastered", "status.learning": "Learning", "status.new": "Unseen",
+        "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.empty": "Empty",
+        "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress",
+        "settings.themeLabel": "Appearance", "settings.themeHint": "Paper by day / ink by night",
+        "settings.light": "Day", "settings.dark": "Night",
+        "settings.langLabel": "Interface language",
+        "settings.langHint": "Word meanings stay in Chinese",
+        "settings.howTitle": "How the memory flow works",
+        "settings.how1": "① Teach: word + IPA + meaning + example, read aloud (always for new words)",
+        "settings.how2": "② Recall: meaning only — tap “I know it / Don’t know”",
+        "settings.how3": "③ Spell: write the English from the meaning",
+        "settings.how4": "Mistakes are requeued and weighted up; mastered words appear less often",
+        "settings.urlTitle": "Online address", "settings.installTitle": "Install on phone",
+        "settings.install1": "iPhone: Safari → Share → Add to Home Screen",
+        "settings.install2": "Android: Chrome → Install app / Add to Home Screen",
+        "settings.importLabel": "Import words JSON",
+        "settings.import": "Merge & import", "settings.reset": "Clear progress",
+        "install.title": "Add to your home screen", "install.sub": " and use it like an app",
+        "install.ios": "iPhone: open in Safari → Share → Add to Home Screen",
+        "install.btn": "Install", "install.how": "How on iPhone?", "install.later": "Not now",
+        "theme.dark": "Night", "theme.light": "Day",
+        "alert.importOk": "Merged — {n} custom words", "alert.importFail": "Import failed: ",
+        "alert.needArray": "Expected a JSON array",
+        "alert.iosHint": "On iPhone, open in Safari → Share → Add to Home Screen.",
+        "confirm.reset": "Clear all recall and spelling stats? Your words are kept.",
+        "pwa.localMode": "Local file mode — the online version lives on GitHub Pages."
+      }
+    };
+
+    let lang = localStorage.getItem(LANG_KEY) === "en" ? "en" : "zh";
+    let theme = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+
+    /** 取文案；params 用 {key} 占位 */
+    function t(key, params) {
+      let s = (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;
+      if (params) {
+        Object.keys(params).forEach(k => {
+          s = s.split("{" + k + "}").join(params[k]);
+        });
+      }
+      return s;
+    }
+
+    function applyTheme(next) {
+      theme = next === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem(THEME_KEY, theme);
+      document.getElementById("themeIcon").textContent = theme === "light" ? "☀" : "🌙";
+      document.getElementById("themeText").textContent =
+        theme === "light" ? t("theme.light") : t("theme.dark");
+      document.querySelectorAll("#segTheme button").forEach(b =>
+        b.classList.toggle("on", b.dataset.themeOpt === theme));
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "light" ? "#f6f2e9" : "#14151a");
+    }
+
+    function applyLang(next) {
+      if (next) {
+        lang = next === "en" ? "en" : "zh";
+        localStorage.setItem(LANG_KEY, lang);
+      }
+      document.documentElement.setAttribute("lang", lang === "en" ? "en" : "zh-CN");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.getElementById("langText").textContent = lang === "en" ? "中文" : "EN";
+      document.querySelectorAll("#segLang button").forEach(b =>
+        b.classList.toggle("on", b.dataset.langOpt === lang));
+      const box = document.getElementById("importBox");
+      if (box) box.setAttribute("placeholder",
+        '[{"en":"example","ipa":"/…/","pos":"n.","zh":"例子","tags":["custom"]}]');
+      applyTheme(theme); // 主题按钮文案跟着语言变
+      // 重绘所有由 JS 生成的文案
+      renderFilters();
+      renderChapters();
+      renderCard();
+      renderWeak();
+      renderBank();
+      updateStats();
+      const onlineEl = document.getElementById("onlineUrl");
+      if (onlineEl) {
+        onlineEl.innerHTML = location.protocol.startsWith("http")
+          ? `<a href="${location.href}" style="color:var(--accent)">${location.href}</a>`
+          : t("pwa.localMode");
+      }
+    }
+
+    document.getElementById("btnTheme").onclick = () =>
+      applyTheme(theme === "light" ? "dark" : "light");
+    document.getElementById("btnLang").onclick = () =>
+      applyLang(lang === "en" ? "zh" : "en");
+    document.querySelectorAll("#segTheme button").forEach(b => {
+      b.onclick = () => applyTheme(b.dataset.themeOpt);
+    });
+    document.querySelectorAll("#segLang button").forEach(b => {
+      b.onclick = () => applyLang(b.dataset.langOpt);
+    });
+
     // init
+    applyTheme(theme);
     renderFilters();
     renderChapters();
     startRound();
     renderWeak();
+    renderBank();
     updateStats();
+    applyLang();
   </script>
 </body>
 </html>
