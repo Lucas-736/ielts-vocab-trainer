@@ -1662,7 +1662,7 @@
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       // Chrome 已知 bug：cancel/闲置后引擎卡在 paused，之后 speak 全部无声
-      window.speechSynthesis.resume();
+      if (typeof window.speechSynthesis.resume === "function") window.speechSynthesis.resume();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "en-GB";
       u.rate = 0.88;
@@ -1680,9 +1680,8 @@
       speechSynthesis.speak(u);
     }
     // 长句朗读时 Chrome 15 秒左右会自动 pause：定时踢一脚保持播放
-    if (window.speechSynthesis) {
+    if (window.speechSynthesis && typeof window.speechSynthesis.resume === "function") {
       setInterval(() => {
-        if (speechSynthesis.speaking && !speechSynthesis.paused) return;
         if (speechSynthesis.paused) speechSynthesis.resume();
       }, 5000);
     }
