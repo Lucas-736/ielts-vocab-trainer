@@ -1041,6 +1041,12 @@
       return s;
     }
 
+    /** 认读词（recog 标签，如地名）：会认即可，不进拼写关 */
+    function isRecogWord(en) {
+      const w = allWords().find(x => normKey(x.en) === normKey(en));
+      return !!(w && (w.tags || []).includes("recog"));
+    }
+
     function isWeak(en) {
       const p = getProg(en);
       if (p.mastered) return false;
@@ -1049,6 +1055,11 @@
 
     function recomputeMastered(en) {
       const p = getProg(en);
+      if (isRecogWord(en)) {
+        // 认读词不考拼写：认读稳定正确即算掌握
+        p.mastered = p.introduced && p.readOk >= 2 && p.readOk > p.readWrong;
+        return;
+      }
       // 认读与拼写都要有稳定正确
       p.mastered =
         p.introduced &&
@@ -1254,6 +1265,9 @@
           q.push({ word: w, mode: "teach" });
           // 教学后立刻一次认读自测
           q.push({ word: w, mode: "read" });
+        } else if ((w.tags || []).includes("recog")) {
+          // 认读词（地名等）：只做认读自测，不进拼写
+          q.push({ word: w, mode: "read" });
         } else {
           // 已认读过：薄弱优先认读再拼写；稳定词可直接拼写
           const needRead = p.readWrong > 0 || p.readOk < 1 || Math.random() < 0.35;
@@ -1362,7 +1376,8 @@
       const main = document.getElementById("learnMain");
       const p = getProg(w.en);
 
-      meta.textContent = `${w.pos || ""}${w.star ? " · " + t("meta.star") : ""} · `
+      const recogWord = (w.tags || []).includes("recog");
+      meta.textContent = `${w.pos || ""}${w.star ? " · " + t("meta.star") : ""}${recogWord ? " · " + t("meta.recog") : ""} · `
         + t("meta.stats", { a: p.spellWrong, b: p.readWrong });
 
       if (item.mode === "teach") {
@@ -1761,7 +1776,7 @@
         "pill.teach": "① 认读教学 · 先跟读",
         "pill.read": "② 认读自测 · 你认识吗？",
         "pill.spell": "③ 拼写练习 · 写出英文",
-        "meta.star": "★重点", "meta.stats": "拼错{a} 认错{b}",
+        "meta.star": "★重点", "meta.recog": "🏷️认读即可", "meta.stats": "拼错{a} 认错{b}",
         "btn.listen": "🔊 再听一遍", "btn.gotIt": "记住了，下一个",
         "btn.dontKnow": "不认识", "btn.know": "认识", "btn.speak": "🔊 读音", "btn.next": "继续",
         "btn.check": "检查 ↩", "btn.hint": "提示", "btn.skip": "跳过",
@@ -1842,7 +1857,7 @@
         "pill.teach": "① Learn · listen and repeat",
         "pill.read": "② Recall · do you know it?",
         "pill.spell": "③ Spell · type the word",
-        "meta.star": "★ key", "meta.stats": "spell ✗{a} · read ✗{b}",
+        "meta.star": "★ key", "meta.recog": "🏷️ recognition only", "meta.stats": "spell ✗{a} · read ✗{b}",
         "btn.listen": "🔊 Listen again", "btn.gotIt": "Got it, next",
         "btn.dontKnow": "Don’t know", "btn.know": "I know it",
         "btn.speak": "🔊 Audio", "btn.next": "Continue",
