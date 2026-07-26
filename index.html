@@ -578,6 +578,14 @@
     .listen-play:active { transform: scale(0.93); }
     /* 每日目标条：达标后换竹青色 */
     .hero-bar i.daily.met { background: linear-gradient(90deg, #7fb28c, #b5d4bd); }
+    /* 云同步 token 输入框 */
+    .sync-input {
+      display: block; width: 100%; box-sizing: border-box;
+      margin: 0 0 10px; padding: 10px 12px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: var(--card); color: var(--text);
+      font-size: 0.85rem; font-family: inherit;
+    }
     .sel-wrap { position: relative; flex: 1 1 118px; min-width: 118px; }
     .sel-wrap::after {
       content: "▾";
@@ -895,6 +903,21 @@
         <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" />
       </div>
 
+      <div class="help" style="margin-bottom:14px">
+        <p style="margin:0 0 6px"><b data-i18n="sync.title">☁️ 云同步（多设备实时）</b></p>
+        <p style="margin:0 0 10px" id="syncStatus">—</p>
+        <div id="syncSetup">
+          <p style="margin:0 0 10px" data-i18n="sync.help">用你的 GitHub 账号免费同步（存入私密 Gist）：创建一个只勾 gist 权限的 token，手机和电脑粘贴同一个 token 即可实时共用进度。</p>
+          <input class="sync-input" id="syncToken" type="password" autocomplete="off"
+                 placeholder="ghp_… / github_pat_…" />
+          <button class="btn primary" id="btnSyncOn" data-i18n="sync.enable">启用同步</button>
+        </div>
+        <div id="syncCtrls" style="display:none;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" id="btnSyncNow" data-i18n="sync.now">🔄 立即同步</button>
+          <button class="btn ghost" id="btnSyncOff" data-i18n="sync.disable">关闭同步</button>
+        </div>
+      </div>
+
       <div class="help">
         <p style="margin:0 0 8px"><b data-i18n="settings.howTitle">记忆模式怎么工作</b></p>
         <ul style="margin:0;padding-left:1.2em">
@@ -983,12 +1006,18 @@
     }
     function saveProgress() {
       localStorage.setItem(STORAGE, JSON.stringify(progress));
+      markLocalUpdate();
+      scheduleSyncPush();
     }
     function loadCustom() {
       try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]"); }
       catch { return []; }
     }
-    function saveCustom(arr) { localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr)); }
+    function saveCustom(arr) {
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr));
+      markLocalUpdate();
+      scheduleSyncPush();
+    }
 
     let progress = loadProgress();
 
@@ -1002,7 +1031,11 @@
         return d;
       } catch { return { goal: 20, days: {} }; }
     })();
-    function saveDaily() { localStorage.setItem(DAILY_KEY, JSON.stringify(daily)); }
+    function saveDaily() {
+      localStorage.setItem(DAILY_KEY, JSON.stringify(daily));
+      markLocalUpdate();
+      scheduleSyncPush();
+    }
     function dayKey(d) {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
@@ -1044,6 +1077,188 @@
       // 设置页的目标选择高亮
       document.querySelectorAll("#segGoal button").forEach(b =>
         b.classList.toggle("on", Number(b.dataset.goalOpt) === daily.goal));
+    }
+
+    // —— GitHub Gist 云同步（可选，多设备实时共用进度）——
+    const SYNC_KEY = "ielts_vocab_sync_v1";
+    const LOCAL_TS_KEY = "ielts_vocab_local_ts";
+    const GIST_FILE = "ielts-vocab-sync.json";
+    const SYNC_DEBOUNCE_MS = 4000;
+    let syncCfg = (() => {
+      try { return JSON.parse(localStorage.getItem(SYNC_KEY) || "null"); }
+      catch { return null; }
+    })();
+    let syncTimer = null;
+    let syncDirty = false;
+    let lastLocalUpdate = Number(localStorage.getItem(LOCAL_TS_KEY) || 0);
+
+    function saveSyncCfg() {
+      if (syncCfg) localStorage.setItem(SYNC_KEY, JSON.stringify(syncCfg));
+      else localStorage.removeItem(SYNC_KEY);
+    }
+    function syncEnabled() { return !!(syncCfg && syncCfg.token); }
+    /** 本机数据有变动：记录时间戳（合并时判新旧）并预约推送 */
+    function markLocalUpdate() {
+      lastLocalUpdate = Date.now();
+      localStorage.setItem(LOCAL_TS_KEY, String(lastLocalUpdate));
+    }
+    function scheduleSyncPush() {
+      if (!syncEnabled()) return;
+      syncDirty = true;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => { syncPush(); }, SYNC_DEBOUNCE_MS);
+    }
+
+    function syncPayload() {
+      const b = backupPayload();
+      b.updatedAt = lastLocalUpdate || Date.now();
+      return b;
+    }
+
+    async function gistFetch(url, opts = {}) {
+      const res = await fetch(url, {
+        ...opts,
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "Authorization": "Bearer " + syncCfg.token,
+          ...(opts.headers || {})
+        }
+      });
+      if (!res.ok) throw new Error("GitHub " + res.status);
+      return res.status === 204 ? null : res.json();
+    }
+
+    /** 找到（其他设备可能已建）或新建私密同步 gist */
+    async function syncEnsureGist() {
+      if (syncCfg.gistId) return syncCfg.gistId;
+      const gists = await gistFetch("https://api.github.com/gists?per_page=100");
+      const found = (gists || []).find(g => g.files && g.files[GIST_FILE]);
+      if (found) { syncCfg.gistId = found.id; saveSyncCfg(); return found.id; }
+      const created = await gistFetch("https://api.github.com/gists", {
+        method: "POST",
+        body: JSON.stringify({
+          description: "ielts-vocab-trainer 学习进度同步（请勿手动编辑）",
+          public: false,
+          files: { [GIST_FILE]: { content: JSON.stringify(syncPayload()) } }
+        })
+      });
+      syncCfg.gistId = created.id;
+      saveSyncCfg();
+      return created.id;
+    }
+
+    async function syncPush() {
+      if (!syncEnabled()) return;
+      setSyncStatus("syncing");
+      try {
+        const id = await syncEnsureGist();
+        await gistFetch("https://api.github.com/gists/" + id, {
+          method: "PATCH",
+          body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(syncPayload()) } } })
+        });
+        syncDirty = false;
+        syncCfg.lastSync = Date.now();
+        saveSyncCfg();
+        setSyncStatus("ok");
+      } catch (e) {
+        syncDirty = true;
+        setSyncStatus("fail", e.message);
+      }
+    }
+
+    async function syncPull(interactive) {
+      if (!syncEnabled()) return;
+      setSyncStatus("syncing");
+      try {
+        const id = await syncEnsureGist();
+        const gist = await gistFetch("https://api.github.com/gists/" + id);
+        const file = gist.files && gist.files[GIST_FILE];
+        let content = file && file.content;
+        if (file && file.truncated) content = await (await fetch(file.raw_url)).text();
+        if (content) {
+          const remote = JSON.parse(content);
+          if (remote && remote.app === "ielts-vocab-trainer" && remote.data) mergeRemote(remote);
+        }
+        syncCfg.lastSync = Date.now();
+        saveSyncCfg();
+        setSyncStatus("ok");
+      } catch (e) {
+        setSyncStatus("fail", e.message);
+        if (interactive) alert(t("sync.fail") + e.message);
+      }
+    }
+
+    /** 合并远端数据：逐词取较新、打卡逐日取较大、自定义词并集、偏好按新旧 */
+    function mergeRemote(remote) {
+      const rd = remote.data || {};
+      const remoteNewer = (remote.updatedAt || 0) > lastLocalUpdate;
+      try {
+        const rp = JSON.parse(rd[STORAGE] || "{}");
+        const sum = (x) => (x.readOk || 0) + (x.readWrong || 0) + (x.spellOk || 0)
+          + (x.spellWrong || 0) + (x.listenOk || 0) + (x.listenWrong || 0);
+        Object.entries(rp).forEach(([k, r]) => {
+          const l = progress[k];
+          if (!l) { progress[k] = r; return; }
+          const takeRemote = (r.last || 0) > (l.last || 0)
+            || ((r.last || 0) === (l.last || 0) && sum(r) > sum(l));
+          if (takeRemote) progress[k] = r;
+        });
+        localStorage.setItem(STORAGE, JSON.stringify(progress));
+      } catch {}
+      try {
+        const rdaily = JSON.parse(rd[DAILY_KEY] || "{}");
+        if (rdaily.days) {
+          Object.entries(rdaily.days).forEach(([day, rec]) => {
+            const lrec = daily.days[day];
+            if (!lrec) daily.days[day] = { n: rec.n || 0, ok: rec.ok || 0 };
+            else {
+              lrec.n = Math.max(lrec.n, rec.n || 0);
+              lrec.ok = Math.max(lrec.ok, rec.ok || 0);
+            }
+          });
+        }
+        if (remoteNewer && typeof rdaily.goal === "number") daily.goal = rdaily.goal;
+        localStorage.setItem(DAILY_KEY, JSON.stringify(daily));
+      } catch {}
+      try {
+        const rc = JSON.parse(rd[CUSTOM_KEY] || "[]");
+        if (Array.isArray(rc) && rc.length) {
+          const map = new Map(loadCustom().map(w => [normKey(w.en), w]));
+          rc.forEach(w => { if (w && w.en && !map.has(normKey(w.en))) map.set(normKey(w.en), w); });
+          localStorage.setItem(CUSTOM_KEY, JSON.stringify([...map.values()]));
+        }
+      } catch {}
+      if (remoteNewer) {
+        [CHAPTER_KEY, THEME_KEY, LANG_KEY].forEach(k => {
+          if (typeof rd[k] === "string") localStorage.setItem(k, rd[k]);
+        });
+        chapter = localStorage.getItem(CHAPTER_KEY) || "all";
+      }
+      refreshAll();
+      updateDailyHud();
+      // 合并结果推回云端，让两台设备都拿到并集
+      scheduleSyncPush();
+    }
+
+    function setSyncStatus(state, msg) {
+      const el = document.getElementById("syncStatus");
+      if (!el) return;
+      if (state === "off") el.textContent = t("sync.statusOff");
+      else if (state === "syncing") el.textContent = t("sync.statusSyncing");
+      else if (state === "ok") el.textContent = t("sync.statusOk", {
+        d: syncCfg && syncCfg.lastSync ? new Date(syncCfg.lastSync).toLocaleString() : "—"
+      });
+      else el.textContent = t("sync.statusFail", { m: msg || "" });
+    }
+    function renderSyncUi() {
+      const on = syncEnabled();
+      const setup = document.getElementById("syncSetup");
+      const ctrls = document.getElementById("syncCtrls");
+      if (!setup) return;
+      setup.style.display = on ? "none" : "block";
+      ctrls.style.display = on ? "flex" : "none";
+      if (!on) setSyncStatus("off");
+      else if (syncCfg.lastSync) setSyncStatus("ok");
     }
 
     let filter = "all";
@@ -1997,6 +2212,18 @@
         "backup.restored": "恢复完成，即将刷新页面。",
         "backup.badFile": "这不是本应用的备份文件",
         "backup.fail": "恢复失败：",
+        "sync.title": "☁️ 云同步（多设备实时）",
+        "sync.help": "用你的 GitHub 账号免费同步（进度存入你的私密 Gist）。创建一个只勾 gist 权限的 token，手机和电脑粘贴同一个 token，即可实时共用进度。",
+        "sync.enable": "启用同步",
+        "sync.now": "🔄 立即同步",
+        "sync.disable": "关闭同步",
+        "sync.needToken": "请先粘贴 GitHub token",
+        "sync.statusOff": "未开启。开启后每次答题自动上传，打开 App 自动下载合并，手机电脑共用一份进度。",
+        "sync.statusSyncing": "同步中…",
+        "sync.statusOk": "✅ 已同步 · {d}",
+        "sync.statusFail": "⚠️ 同步失败（{m}）。检查网络或 token 是否有效。",
+        "sync.confirmOff": "关闭后本机不再自动同步（云端和其他设备的数据保留）。确定？",
+        "sync.fail": "同步失败：",
         "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
         "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
         "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
@@ -2096,6 +2323,18 @@
         "backup.restored": "Restored. The page will now reload.",
         "backup.badFile": "Not a backup file from this app",
         "backup.fail": "Restore failed: ",
+        "sync.title": "☁️ Cloud sync (multi-device)",
+        "sync.help": "Free sync via your GitHub account (data lives in your secret Gist). Create a token with only the gist scope, paste the same token on each device.",
+        "sync.enable": "Enable sync",
+        "sync.now": "🔄 Sync now",
+        "sync.disable": "Turn off",
+        "sync.needToken": "Paste your GitHub token first",
+        "sync.statusOff": "Off. When on, every answer uploads automatically and opening the app pulls & merges the latest.",
+        "sync.statusSyncing": "Syncing…",
+        "sync.statusOk": "✅ Synced · {d}",
+        "sync.statusFail": "⚠️ Sync failed ({m}). Check network or token.",
+        "sync.confirmOff": "This device will stop syncing (cloud data and other devices keep theirs). Continue?",
+        "sync.fail": "Sync failed: ",
         "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
         "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
         "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
@@ -2324,6 +2563,30 @@
       navigator.storage.persist().catch(() => {});
     }
 
+    // —— 云同步 UI 事件 ——
+    document.getElementById("btnSyncOn").onclick = () => {
+      const token = document.getElementById("syncToken").value.trim();
+      if (!token) { alert(t("sync.needToken")); return; }
+      syncCfg = { token, gistId: null, lastSync: 0 };
+      saveSyncCfg();
+      document.getElementById("syncToken").value = "";
+      renderSyncUi();
+      syncPull(true).then(() => syncPush());
+    };
+    document.getElementById("btnSyncNow").onclick = () =>
+      syncPull(true).then(() => syncPush());
+    document.getElementById("btnSyncOff").onclick = () => {
+      if (!confirm(t("sync.confirmOff"))) return;
+      syncCfg = null;
+      saveSyncCfg();
+      renderSyncUi();
+    };
+    // 断网恢复时补推；切到后台前把没推完的推掉
+    window.addEventListener("online", () => { if (syncDirty) syncPush(); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && syncDirty) syncPush();
+    });
+
     // init
     applyTheme(theme);
     renderScopeBar();
@@ -2333,6 +2596,8 @@
     applyLang();
     updateDailyHud();
     updateBackupInfo();
+    renderSyncUi();
+    if (syncEnabled()) syncPull(); // 打开即拉取其他设备的最新进度
     showPanel("home");
   </script>
 </body>
