@@ -885,6 +885,16 @@
         </div>
       </div>
 
+      <div class="help" style="margin-bottom:14px">
+        <p style="margin:0 0 6px"><b data-i18n="backup.title">进度备份</b></p>
+        <p style="margin:0 0 10px" id="backupInfo">—</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="btnBackup" data-i18n="backup.export">⬇ 下载完整备份</button>
+          <button class="btn ghost" id="btnRestore" data-i18n="backup.import">⬆ 从备份恢复</button>
+        </div>
+        <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" />
+      </div>
+
       <div class="help">
         <p style="margin:0 0 8px"><b data-i18n="settings.howTitle">记忆模式怎么工作</b></p>
         <ul style="margin:0;padding-left:1.2em">
@@ -1977,6 +1987,16 @@
         "daily.today": "今日 {a}/{b} 题",
         "daily.done": "今日达标 ✅ 已练 {a} 题",
         "settings.goalLabel": "每日目标", "settings.goalHint": "当天答题数达标即算打卡",
+        "backup.title": "进度备份",
+        "backup.export": "⬇ 下载完整备份",
+        "backup.import": "⬆ 从备份恢复",
+        "backup.never": "还没备份过。进度只存在这台设备的浏览器里，建议每周备份一次。",
+        "backup.last": "上次备份：{d}。",
+        "backup.overdue": "⚠️ 已超过 7 天，建议现在备份。",
+        "backup.confirm": "恢复将覆盖本机现有的学习进度、打卡和设置，确定继续？",
+        "backup.restored": "恢复完成，即将刷新页面。",
+        "backup.badFile": "这不是本应用的备份文件",
+        "backup.fail": "恢复失败：",
         "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
         "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
         "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
@@ -2066,6 +2086,16 @@
         "daily.today": "Today {a}/{b}",
         "daily.done": "Goal met ✅ {a} answered today",
         "settings.goalLabel": "Daily goal", "settings.goalHint": "Answer this many to keep your streak",
+        "backup.title": "Backup",
+        "backup.export": "⬇ Download full backup",
+        "backup.import": "⬆ Restore from backup",
+        "backup.never": "Never backed up. Progress lives only in this browser — back up weekly.",
+        "backup.last": "Last backup: {d}.",
+        "backup.overdue": "⚠️ Over 7 days ago — back up now.",
+        "backup.confirm": "Restoring will overwrite progress, streak and settings on this device. Continue?",
+        "backup.restored": "Restored. The page will now reload.",
+        "backup.badFile": "Not a backup file from this app",
+        "backup.fail": "Restore failed: ",
         "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
         "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
         "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
@@ -2199,6 +2229,7 @@
       updateStats();
       updateCta();
       updateDailyHud();
+      if (typeof updateBackupInfo === "function") updateBackupInfo();
       if (studyOpen) {
         document.getElementById("studyChapter").textContent =
           chapterLabel(chapter) + " · " + t(SCOPES.find(x => x.id === filter).key);
@@ -2229,6 +2260,70 @@
       };
     });
 
+    // —— 完整备份 / 恢复（进度只在本机 localStorage，谨防 iOS 清理）——
+    const BACKUP_TS_KEY = "ielts_vocab_backup_ts";
+    function backupPayload() {
+      const keys = [STORAGE, DAILY_KEY, CUSTOM_KEY, CHAPTER_KEY, THEME_KEY, LANG_KEY];
+      const data = {};
+      keys.forEach(k => {
+        const v = localStorage.getItem(k);
+        if (v != null) data[k] = v;
+      });
+      return {
+        app: "ielts-vocab-trainer",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data
+      };
+    }
+    document.getElementById("btnBackup").onclick = () => {
+      downloadJson(backupPayload(), `ielts-vocab-backup-${dayKey(new Date())}.json`);
+      localStorage.setItem(BACKUP_TS_KEY, String(Date.now()));
+      updateBackupInfo();
+    };
+    document.getElementById("btnRestore").onclick = () =>
+      document.getElementById("restoreFile").click();
+    document.getElementById("restoreFile").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const obj = JSON.parse(reader.result);
+          if (!obj || obj.app !== "ielts-vocab-trainer" || !obj.data) {
+            throw new Error(t("backup.badFile"));
+          }
+          if (!confirm(t("backup.confirm"))) { e.target.value = ""; return; }
+          Object.entries(obj.data).forEach(([k, v]) => {
+            if (typeof k === "string" && k.indexOf("ielts_vocab_") === 0 && typeof v === "string") {
+              localStorage.setItem(k, v);
+            }
+          });
+          alert(t("backup.restored"));
+          location.reload();
+        } catch (err) {
+          alert(t("backup.fail") + ((err && err.message) || ""));
+          e.target.value = "";
+        }
+      };
+      reader.readAsText(f);
+    });
+    function updateBackupInfo() {
+      const el = document.getElementById("backupInfo");
+      if (!el) return;
+      const ts = Number(localStorage.getItem(BACKUP_TS_KEY) || 0);
+      const learned = Object.values(progress).filter(p => p && p.introduced).length;
+      let s = ts
+        ? t("backup.last", { d: new Date(ts).toLocaleDateString() })
+        : t("backup.never");
+      if (learned > 0 && (!ts || Date.now() - ts > 7 * DAY_MS)) s += " " + t("backup.overdue");
+      el.textContent = s;
+    }
+    // 请求浏览器把本站存储标记为「持久」，降低被系统自动清理的概率
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
+
     // init
     applyTheme(theme);
     renderScopeBar();
@@ -2237,6 +2332,7 @@
     updateStats();
     applyLang();
     updateDailyHud();
+    updateBackupInfo();
     showPanel("home");
   </script>
 </body>

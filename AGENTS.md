@@ -60,6 +60,7 @@ git push origin main
 - 改完 **必须** 把 `sw.js` 的 `CACHE` 字符串版本号递增（如 `v2` → `v3`），否则手机可能一直离线旧页。  
 - 进度 schema 在 `getProg()`（含 `listenOk/listenWrong/ivl/ease/due`）；变更字段时要兼容旧 `localStorage`（照 migrate v1/v2 的写法加迁移）。  
 - 不要默认删除用户进度；「清空」只能是用户点击触发。
+- 完整备份/恢复在设置页（`backupPayload()`：打包所有 `ielts_vocab_*` key；恢复只接受 `app:"ielts-vocab-trainer"` 的文件且只写回 `ielts_vocab_` 前缀）。新增 localStorage key 时记得加进 `backupPayload` 的 keys 列表。
 
 ## 不要做的事
 
