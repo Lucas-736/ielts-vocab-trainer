@@ -2,6 +2,8 @@
  * 词库数据 —— 来自 SecondBrain 雅思笔记
  * 来源：词汇积累.md · Day1-足球运动员的大脑-词汇语法.md
  *       Day2-Should we cycle more?.md
+ *       原始资料/6 Minute English：Rude emails · Stress-free family meals
+ *         · Limiting screen time for children · How advertisers make us spend money
  *
  * 字段说明：
  *   en        英文（拼写答案，大小写不敏感）
@@ -20,13 +22,21 @@
 /** 章节标题表：key 为 tags 里的 dayN，value 为显示名 */
 window.VOCAB_CHAPTERS = {
   day1: "Day 1 · 足球运动员的大脑",
-  day2: "Day 2 · Should we cycle more?"
+  day2: "Day 2 · Should we cycle more?",
+  day3: "Day 3 · 无礼的邮件",
+  day4: "Day 4 · 轻松的家庭晚餐",
+  day5: "Day 5 · 限制孩子的屏幕时间",
+  day6: "Day 6 · 广告商如何让我们花钱"
 };
 
 /** 英文界面下的章节标题（缺省回落到 "Day N"） */
 window.VOCAB_CHAPTERS_EN = {
   day1: "Day 1 · A footballer's brain",
-  day2: "Day 2 · Should we cycle more?"
+  day2: "Day 2 · Should we cycle more?",
+  day3: "Day 3 · Rude emails",
+  day4: "Day 4 · Stress-free family meals",
+  day5: "Day 5 · Limiting screen time for children",
+  day6: "Day 6 · How advertisers make us spend money"
 };
 
 window.VOCAB_BANK = [
@@ -676,6 +686,356 @@ window.VOCAB_BANK = [
     zh: "方便；便利",
     example: "Electric bikes increase convenience.",
     tags: ["day2"],
+    star: false
+  },
+  {
+    en: "urban",
+    ipa: "/ˈɜː.bən/",
+    pos: "adj.",
+    zh: "都市的；城市的",
+    example: "urban planning in Dubai",
+    tags: ["day2", "city", "ielts"],
+    star: true
+  },
+  {
+    en: "metropolitan",
+    ipa: "/ˌmetrəˈpɒlɪtən/",
+    pos: "adj.",
+    zh: "大城市的；都市的",
+    example: "a metropolitan city",
+    tags: ["day2", "city", "ielts"],
+    star: true
+  },
+  {
+    en: "expat",
+    ipa: "/ˈɛkspæt/",
+    pos: "n.",
+    zh: "外籍居民；侨居者",
+    example: "living as an expat in a foreign country",
+    tags: ["day2", "city", "ielts"],
+    star: false
+  },
+  {
+    en: "cosmopolitan",
+    ipa: "/ˌkɒzməˈpɒlɪtən/",
+    pos: "adj.",
+    zh: "世界性的；国际化的",
+    example: "a cosmopolitan city like Dubai",
+    tags: ["day2", "city", "ielts"],
+    star: true
+  },
+  {
+    en: "sustainable",
+    ipa: "/səˈsteɪnəbl/",
+    pos: "adj.",
+    zh: "可持续的；环保的",
+    example: "sustainable urban development",
+    tags: ["day2", "city", "ielts"],
+    star: true
+  },
+  {
+    en: "relocate",
+    ipa: "/ˌriːləʊˈkeɪt/",
+    pos: "v.",
+    zh: "迁移；重新安置",
+    example: "people who want to relocate to a better city",
+    tags: ["day2", "city", "ielts"],
+    star: false
+  },
+
+  // —— Day 3 · Rude emails（BBC 6 Minute English）——
+  {
+    en: "put someone on the defensive",
+    ipa: "/ɒn ðə dɪˈfensɪv/",
+    pos: "习语",
+    zh: "使某人感到受威胁而处于防御状态",
+    example: "Starting an email with 'per my last email' puts someone on the defensive.",
+    tags: ["day3", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "uncivil",
+    ipa: "/ʌnˈsɪvl/",
+    pos: "adj.",
+    zh: "无礼的；不礼貌的",
+    example: "We're more likely to be uncivil when we're frazzled.",
+    tags: ["day3", "core"],
+    star: true
+  },
+  {
+    en: "belittle",
+    ipa: "/bɪˈlɪtl/",
+    pos: "v.",
+    zh: "贬低；轻视",
+    example: "To belittle someone means to make them feel inferior.",
+    tags: ["day3", "core"],
+    star: true
+  },
+  {
+    en: "put someone in their place",
+    ipa: "/ɪn ðeə ˈpleɪs/",
+    pos: "习语",
+    zh: "灭某人威风；让某人明白自己没那么重要",
+    example: "The boss wants to put you in your place.",
+    tags: ["day3", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "get something off your plate",
+    ipa: "/ɒf jɔː ˈpleɪt/",
+    pos: "习语",
+    zh: "把（任务/问题）甩给别人处理",
+    example: "Such colleagues want to get work off their plate.",
+    tags: ["day3", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "frazzled",
+    ipa: "/ˈfræzld/",
+    pos: "adj.",
+    zh: "（因事情太多而）精疲力竭的、烦躁的",
+    example: "We are operating in environments where we are all quite frazzled.",
+    tags: ["day3", "core"],
+    star: true
+  },
+  {
+    en: "incivility",
+    ipa: "/ˌɪnsɪˈvɪləti/",
+    pos: "n.",
+    zh: "无礼；不文明行为",
+    example: "We are more at risk of engaging in incivility.",
+    tags: ["day3"],
+    star: false
+  },
+  {
+    en: "on a daily basis",
+    ipa: "/ɒn ə ˈdeɪli ˈbeɪsɪs/",
+    pos: "短语",
+    zh: "每天；日常地",
+    example: "We all deal with emails on a daily basis.",
+    tags: ["day3", "phrase"],
+    star: false
+  },
+
+  // —— Day 4 · Stress-free family meals（BBC 6 Minute English）——
+  {
+    en: "ups and downs",
+    ipa: "/ˌʌps ən ˈdaʊnz/",
+    pos: "短语",
+    zh: "起起落落；好事与坏事的交替",
+    example: "Family life is full of ups and downs.",
+    tags: ["day4", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "mood",
+    ipa: "/muːd/",
+    pos: "n.",
+    zh: "心情；情绪",
+    example: "Your mood is how you feel at a particular time.",
+    tags: ["day4", "core"],
+    star: true
+  },
+  {
+    en: "battleground",
+    ipa: "/ˈbætlɡraʊnd/",
+    pos: "n.",
+    zh: "战场；冲突发生的地方",
+    example: "Dinnertime often becomes a battleground.",
+    tags: ["day4", "core"],
+    star: true
+  },
+  {
+    en: "a big deal",
+    ipa: "/ə bɪɡ ˈdiːl/",
+    pos: "短语",
+    zh: "重要的事；了不起的事",
+    example: "Controlling what they eat is a big deal for kids.",
+    tags: ["day4", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "food allergy",
+    ipa: "/ˈfuːd ˌælədʒi/",
+    pos: "n.",
+    zh: "食物过敏",
+    example: "It's harder if your child has a food allergy.",
+    tags: ["day4", "core"],
+    star: true
+  },
+  {
+    en: "winning formula",
+    ipa: "/ˈwɪnɪŋ ˈfɔːmjələ/",
+    pos: "习语",
+    zh: "制胜法宝；成功的方法",
+    example: "We found the winning formula, which was rice and beans.",
+    tags: ["day4", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "fussy eater",
+    ipa: "/ˈfʌsi ˈiːtə/",
+    pos: "n.",
+    zh: "挑食的人",
+    example: "Are you a fussy eater?",
+    tags: ["day4", "phrase"],
+    star: false
+  },
+  {
+    en: "eating habits",
+    ipa: "/ˈiːtɪŋ ˈhæbɪts/",
+    pos: "短语",
+    zh: "饮食习惯",
+    example: "experts on young children's eating habits",
+    tags: ["day4", "phrase"],
+    star: false
+  },
+
+  // —— Day 5 · Limiting screen time for children（BBC 6 Minute English）——
+  {
+    en: "intentional",
+    ipa: "/ɪnˈtenʃənl/",
+    pos: "adj.",
+    zh: "有意的；有计划有目的的",
+    example: "Being more intentional about screen time helps children.",
+    tags: ["day5", "core"],
+    star: true
+  },
+  {
+    en: "the bar needs to be higher",
+    ipa: "/ðə bɑː/",
+    pos: "习语",
+    zh: "标准/期望需要更高",
+    example: "Emily believes that the bar needs to be higher.",
+    tags: ["day5", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "enable",
+    ipa: "/ɪˈneɪbl/",
+    pos: "v.",
+    zh: "使能够；使成为可能",
+    example: "If you enable something, you make it possible.",
+    tags: ["day5", "core"],
+    star: true
+  },
+  {
+    en: "eager",
+    ipa: "/ˈiːɡə/",
+    pos: "adj.",
+    zh: "渴望的；热切的",
+    example: "Parents are eager to understand what's happening around technology.",
+    tags: ["day5", "core"],
+    star: true
+  },
+  {
+    en: "shift",
+    ipa: "/ʃɪft/",
+    pos: "n.",
+    zh: "小的改变；转变",
+    example: "Little shifts in daily habits feel better.",
+    tags: ["day5", "core"],
+    star: true
+  },
+  {
+    en: "set someone up for something",
+    ipa: "/set ... ʌp fɔː/",
+    pos: "习语",
+    zh: "为某人做好…的准备",
+    example: "Having the device in view doesn't set them up for success.",
+    tags: ["day5", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "screen time",
+    ipa: "/ˈskriːn taɪm/",
+    pos: "n.",
+    zh: "屏幕时间（使用电子设备的时间）",
+    example: "Governments want to limit the amount of screen time for children.",
+    tags: ["day5", "phrase"],
+    star: false
+  },
+  {
+    en: "measure",
+    ipa: "/ˈmeʒə/",
+    pos: "n.",
+    zh: "措施；办法",
+    example: "Governments are introducing online safety measures.",
+    tags: ["day5", "ielts"],
+    star: false
+  },
+
+  // —— Day 6 · How advertisers make us spend money（BBC 6 Minute English）——
+  {
+    en: "mental shortcut",
+    ipa: "/ˈmentl ˈʃɔːtkʌt/",
+    pos: "n.",
+    zh: "思维捷径（帮助快速做决定）",
+    example: "A mental shortcut helps us make a decision quickly.",
+    tags: ["day6", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "judged",
+    ipa: "/dʒʌdʒd/",
+    pos: "adj.",
+    zh: "感到被评判的；担心别人怎么看自己",
+    example: "No one feels judged by a computer screen.",
+    tags: ["day6", "core"],
+    star: true
+  },
+  {
+    en: "upsell",
+    ipa: "/ˈʌpsel/",
+    pos: "v.",
+    zh: "追加销售；引导顾客买更多/更贵的东西",
+    example: "If you upsell something, you get someone to spend more.",
+    tags: ["day6", "core"],
+    star: true
+  },
+  {
+    en: "basket spend",
+    ipa: "/ˈbɑːskɪt spend/",
+    pos: "n.",
+    zh: "单次购物总消费额",
+    example: "Upselling can increase people's basket spend.",
+    tags: ["day6", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "think outside the box",
+    ipa: "/θɪŋk aʊtˈsaɪd ðə bɒks/",
+    pos: "习语",
+    zh: "跳出思维定式；创造性地思考",
+    example: "We needed something really creative to think outside the box.",
+    tags: ["day6", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "model",
+    ipa: "/ˈmɒdl/",
+    pos: "v.",
+    zh: "示范（供他人模仿的行为）",
+    example: "If you model behaviour, you behave in a way that others can copy.",
+    tags: ["day6", "core"],
+    star: true
+  },
+  {
+    en: "rational",
+    ipa: "/ˈræʃənl/",
+    pos: "adj.",
+    zh: "理性的；合理的",
+    example: "We like to think we make rational, independent choices.",
+    tags: ["day6", "ielts"],
+    star: false
+  },
+  {
+    en: "transaction",
+    ipa: "/trænˈzækʃn/",
+    pos: "n.",
+    zh: "交易；一笔买卖",
+    example: "the total amount that someone spends in one transaction",
+    tags: ["day6", "ielts"],
     star: false
   }
 ];
