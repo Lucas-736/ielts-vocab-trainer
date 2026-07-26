@@ -1751,7 +1751,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "诗歌（总称）",
     example: "Poetry can help you connect with others.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: true
   },
   {
@@ -1760,7 +1760,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "诗人",
     example: "The poet read her work aloud.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: false
   },
   {
@@ -1769,7 +1769,7 @@ window.VOCAB_BANK = [
     pos: "n. v.",
     zh: "押韵；押韵词",
     example: "'Cat' rhymes with 'hat'.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: true
   },
   {
@@ -1778,7 +1778,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "诗句；诗节",
     example: "She wrote a few verses about the sea.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: false
   },
   {
@@ -1787,7 +1787,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "隐喻；比喻",
     example: "'Time is money' is a famous metaphor.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: true
   },
   {
@@ -1796,7 +1796,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "意象；形象化描写",
     example: "The poem is full of vivid imagery.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: false
   },
   {
@@ -1805,7 +1805,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "背诵；朗诵",
     example: "Children recite poems at school.",
-    tags: ["day8", "preview"],
+    tags: ["day8"],
     star: true
   },
   {
@@ -1814,7 +1814,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "唤起（情感、记忆）",
     example: "The poem evokes memories of childhood.",
-    tags: ["day8", "preview", "ielts"],
+    tags: ["day8", "ielts"],
     star: true
   },
   {
@@ -1823,7 +1823,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "接受（现实）；与…和解",
     example: "Poetry can help you come to terms with personal emotions.",
-    tags: ["day8", "preview", "phrase"],
+    tags: ["day8", "phrase"],
     star: true
   },
   {
@@ -1832,7 +1832,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "传播消息；广而告之",
     example: "Poetry can spread the word about important global events.",
-    tags: ["day8", "preview", "phrase"],
+    tags: ["day8", "phrase"],
     star: false
   },
 
@@ -1843,7 +1843,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "债务（注意 b 不发音）",
     example: "Many people are living with debt.",
-    tags: ["day9", "preview", "ielts"],
+    tags: ["day9", "ielts", "core"],
     star: true
   },
   {
@@ -1852,7 +1852,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "欠（钱、人情）",
     example: "I owe the bank a lot of money.",
-    tags: ["day9", "preview", "ielts"],
+    tags: ["day9", "ielts"],
     star: true
   },
   {
@@ -1861,7 +1861,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "借入",
     example: "People are borrowing money for bills and food.",
-    tags: ["day9", "preview"],
+    tags: ["day9"],
     star: true
   },
   {
@@ -1870,7 +1870,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "借出",
     example: "The bank agreed to lend her money.",
-    tags: ["day9", "preview"],
+    tags: ["day9"],
     star: false
   },
   {
@@ -1879,7 +1879,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "贷款",
     example: "He took out a loan to buy a car.",
-    tags: ["day9", "preview", "ielts"],
+    tags: ["day9", "ielts"],
     star: false
   },
   {
@@ -1888,7 +1888,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "利率",
     example: "Interest rates have risen sharply.",
-    tags: ["day9", "preview", "phrase", "ielts"],
+    tags: ["day9", "phrase", "ielts"],
     star: true
   },
   {
@@ -1897,7 +1897,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "偿还",
     example: "It took years to repay the debt.",
-    tags: ["day9", "preview"],
+    tags: ["day9"],
     star: false
   },
   {
@@ -1906,7 +1906,7 @@ window.VOCAB_BANK = [
     pos: "n. v.",
     zh: "预算；做预算",
     example: "Keep a monthly budget to control spending.",
-    tags: ["day9", "preview", "ielts"],
+    tags: ["day9", "ielts"],
     star: true
   },
   {
@@ -1915,7 +1915,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "收支相抵；勉强糊口",
     example: "Many families struggle to make ends meet.",
-    tags: ["day9", "preview", "phrase"],
+    tags: ["day9", "phrase", "core"],
     star: true
   },
   {
@@ -1924,7 +1924,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "生活成本",
     example: "The rising cost of living forces people to borrow.",
-    tags: ["day9", "preview", "phrase", "ielts"],
+    tags: ["day9", "phrase", "ielts"],
     star: true
   },
   {
@@ -1933,7 +1933,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "失控",
     example: "Debt can get out of control, causing anxiety and stress.",
-    tags: ["day9", "preview", "phrase"],
+    tags: ["day9", "phrase"],
     star: false
   },
 
@@ -1944,7 +1944,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "噪音污染",
     example: "Noise pollution affects people's health in cities.",
-    tags: ["day10", "preview", "phrase", "ielts"],
+    tags: ["day10", "phrase", "ielts"],
     star: true
   },
   {
@@ -1953,7 +1953,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "背景噪音",
     example: "It's hard to focus with constant background noise.",
-    tags: ["day10", "preview", "phrase"],
+    tags: ["day10", "phrase"],
     star: false
   },
   {
@@ -1962,7 +1962,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "喧嚣繁忙",
     example: "She loves the hustle and bustle of city life.",
-    tags: ["day10", "preview", "phrase"],
+    tags: ["day10", "phrase"],
     star: true
   },
   {
@@ -1971,7 +1971,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "宁静的",
     example: "a tranquil park in the middle of the city",
-    tags: ["day10", "preview", "ielts"],
+    tags: ["day10", "ielts"],
     star: true
   },
   {
@@ -1980,7 +1980,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "使（声音）低沉；压低",
     example: "Trees can muffle traffic noise.",
-    tags: ["day10", "preview"],
+    tags: ["day10"],
     star: false
   },
   {
@@ -1989,7 +1989,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "声音景观；声景",
     example: "Designers think about a city's soundscape.",
-    tags: ["day10", "preview"],
+    tags: ["day10"],
     star: false
   },
   {
@@ -1998,7 +1998,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "城市规划",
     example: "Good urban planning makes cities quieter.",
-    tags: ["day10", "preview", "phrase", "ielts"],
+    tags: ["day10", "phrase", "ielts"],
     star: true
   },
   {
@@ -2007,7 +2007,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "绿地",
     example: "Green spaces make cities more liveable.",
-    tags: ["day10", "preview", "phrase", "ielts"],
+    tags: ["day10", "phrase", "ielts"],
     star: true
   },
   {
@@ -2016,7 +2016,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "讨厌的东西；麻烦事",
     example: "Late-night noise is a real nuisance.",
-    tags: ["day10", "preview", "ielts"],
+    tags: ["day10", "ielts"],
     star: false
   },
   {
@@ -2025,7 +2025,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "隔音/隔热（材料）",
     example: "Sound insulation keeps flats quiet.",
-    tags: ["day10", "preview"],
+    tags: ["day10"],
     star: false
   },
 
@@ -2036,7 +2036,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "读写能力；识字",
     example: "Reading early improves children's literacy.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: true
   },
   {
@@ -2045,7 +2045,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "理解（力）",
     example: "Reading fiction improves comprehension.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: true
   },
   {
@@ -2054,7 +2054,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "小说；虚构作品",
     example: "She reads a lot of fiction.",
-    tags: ["day11", "preview"],
+    tags: ["day11"],
     star: false
   },
   {
@@ -2063,7 +2063,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "想象力",
     example: "Novels feed the imagination.",
-    tags: ["day11", "preview"],
+    tags: ["day11"],
     star: false
   },
   {
@@ -2072,7 +2072,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "专注力",
     example: "Deep reading builds concentration.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: false
   },
   {
@@ -2081,7 +2081,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "共情能力；同理心",
     example: "Reading stories increases empathy.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: true
   },
   {
@@ -2090,7 +2090,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "刺激；激发",
     example: "Reading stimulates many areas of the brain.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: true
   },
   {
@@ -2099,7 +2099,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "记住；保留",
     example: "We retain more when we read slowly.",
-    tags: ["day11", "preview", "ielts"],
+    tags: ["day11", "ielts"],
     star: false
   },
   {
@@ -2108,7 +2108,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "沉浸于",
     example: "Immerse yourself in a good book.",
-    tags: ["day11", "preview", "phrase"],
+    tags: ["day11", "phrase"],
     star: true
   },
 
@@ -2119,7 +2119,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "天文学家",
     example: "Astronomers search for planets like Earth.",
-    tags: ["day12", "preview"],
+    tags: ["day12"],
     star: true
   },
   {
@@ -2128,7 +2128,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "望远镜",
     example: "The telescope can detect distant planets.",
-    tags: ["day12", "preview"],
+    tags: ["day12"],
     star: false
   },
   {
@@ -2137,7 +2137,7 @@ window.VOCAB_BANK = [
     pos: "n. v.",
     zh: "轨道；绕…运行",
     example: "The planet orbits a distant star.",
-    tags: ["day12", "preview", "ielts"],
+    tags: ["day12", "ielts"],
     star: true
   },
   {
@@ -2146,7 +2146,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "适宜居住的",
     example: "Is the planet habitable?",
-    tags: ["day12", "preview"],
+    tags: ["day12", "core"],
     star: true
   },
   {
@@ -2155,7 +2155,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "地球外的；外星的",
     example: "searching for extraterrestrial life",
-    tags: ["day12", "preview"],
+    tags: ["day12"],
     star: false
   },
   {
@@ -2164,7 +2164,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "星系；银河",
     example: "There are billions of stars in our galaxy.",
-    tags: ["day12", "preview"],
+    tags: ["day12"],
     star: false
   },
   {
@@ -2173,7 +2173,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "太阳系",
     example: "planets beyond our solar system",
-    tags: ["day12", "preview", "phrase"],
+    tags: ["day12", "phrase"],
     star: true
   },
   {
@@ -2182,7 +2182,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "宇宙",
     example: "Are we alone in the universe?",
-    tags: ["day12", "preview"],
+    tags: ["day12"],
     star: false
   },
   {
@@ -2191,7 +2191,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "证据",
     example: "Scientists look for evidence of life.",
-    tags: ["day12", "preview", "ielts"],
+    tags: ["day12", "ielts"],
     star: true
   },
 
@@ -2202,7 +2202,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "职业倦怠；身心俱疲",
     example: "Long hours can lead to burnout.",
-    tags: ["day13", "preview", "ielts"],
+    tags: ["day13", "ielts", "core"],
     star: true
   },
   {
@@ -2211,7 +2211,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "应对；对付",
     example: "How do you cope with stress?",
-    tags: ["day13", "preview", "phrase", "ielts"],
+    tags: ["day13", "phrase", "ielts"],
     star: true
   },
   {
@@ -2220,7 +2220,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "慢性的；长期的",
     example: "Chronic stress harms your health.",
-    tags: ["day13", "preview", "ielts"],
+    tags: ["day13", "ielts", "core"],
     star: true
   },
   {
@@ -2229,7 +2229,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "压力大的；紧张透了",
     example: "I'm totally stressed out this week.",
-    tags: ["day13", "preview", "phrase"],
+    tags: ["day13", "phrase"],
     star: false
   },
   {
@@ -2238,7 +2238,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "工作与生活的平衡",
     example: "A good work-life balance reduces stress.",
-    tags: ["day13", "preview", "phrase", "ielts"],
+    tags: ["day13", "phrase", "ielts"],
     star: true
   },
   {
@@ -2247,7 +2247,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "正念",
     example: "Mindfulness can help you relax.",
-    tags: ["day13", "preview"],
+    tags: ["day13"],
     star: false
   },
   {
@@ -2256,7 +2256,7 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "放松",
     example: "I listen to music to unwind after work.",
-    tags: ["day13", "preview"],
+    tags: ["day13"],
     star: true
   },
   {
@@ -2265,7 +2265,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "承受压力",
     example: "She works well under pressure.",
-    tags: ["day13", "preview", "phrase"],
+    tags: ["day13", "phrase"],
     star: false
   },
   {
@@ -2274,7 +2274,7 @@ window.VOCAB_BANK = [
     pos: "短语",
     zh: "休息一下",
     example: "Take a break every hour when studying.",
-    tags: ["day13", "preview", "phrase"],
+    tags: ["day13", "phrase"],
     star: false
   },
 
@@ -2285,7 +2285,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "超加工的",
     example: "Should we eat ultra-processed food?",
-    tags: ["day14", "preview"],
+    tags: ["day14"],
     star: true
   },
   {
@@ -2294,7 +2294,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "成分；食材",
     example: "Check the ingredients on the label.",
-    tags: ["day14", "preview", "ielts"],
+    tags: ["day14", "ielts"],
     star: true
   },
   {
@@ -2303,7 +2303,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "添加剂",
     example: "This snack is full of additives.",
-    tags: ["day14", "preview", "ielts"],
+    tags: ["day14", "ielts"],
     star: true
   },
   {
@@ -2312,7 +2312,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "防腐剂",
     example: "Preservatives make food last longer.",
-    tags: ["day14", "preview"],
+    tags: ["day14"],
     star: false
   },
   {
@@ -2321,7 +2321,7 @@ window.VOCAB_BANK = [
     pos: "adj.",
     zh: "有营养的",
     example: "Fresh vegetables are cheap and nutritious.",
-    tags: ["day14", "preview", "ielts"],
+    tags: ["day14", "ielts"],
     star: true
   },
   {
@@ -2330,7 +2330,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "消费；摄入（量）",
     example: "Reduce your consumption of sugary drinks.",
-    tags: ["day14", "preview", "ielts"],
+    tags: ["day14", "ielts"],
     star: false
   },
   {
@@ -2339,7 +2339,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "肥胖（症）",
     example: "Ultra-processed food is linked to obesity.",
-    tags: ["day14", "preview", "ielts"],
+    tags: ["day14", "ielts"],
     star: true
   },
   {
@@ -2348,7 +2348,7 @@ window.VOCAB_BANK = [
     pos: "n.",
     zh: "垃圾食品",
     example: "Try to eat less junk food.",
-    tags: ["day14", "preview", "phrase"],
+    tags: ["day14", "phrase"],
     star: false
   },
   {
@@ -2357,7 +2357,606 @@ window.VOCAB_BANK = [
     pos: "v.",
     zh: "渴望；馋",
     example: "We often crave salty, processed snacks.",
-    tags: ["day14", "preview"],
+    tags: ["day14"],
     star: false
+  },
+
+  // —— Day 8 官方核心词 + 补充（The power of poetry） ——
+  {
+    en: "open mic night",
+    ipa: "/ˌəʊpən ˈmaɪk naɪt/",
+    pos: "n.",
+    zh: "开放麦之夜（任何人可上台表演）",
+    example: "A good place to hear poetry is an open mic night.",
+    tags: ["day8", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "touch your soul",
+    ipa: "/tʌtʃ jɔː ˈsəʊl/",
+    pos: "短语",
+    zh: "触动心灵；深深打动",
+    example: "People can really touch your soul with what they're saying.",
+    tags: ["day8", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "jargon",
+    ipa: "/ˈdʒɑːɡən/",
+    pos: "n.",
+    zh: "行话；术语",
+    example: "A lot of this jargon is really hard to understand.",
+    tags: ["day8", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "impenetrable",
+    ipa: "/ɪmˈpenɪtrəbl/",
+    pos: "adj.",
+    zh: "无法理解的；无法穿透的",
+    example: "Jargon can make scientific papers impenetrable.",
+    tags: ["day8", "core"],
+    star: true
+  },
+  {
+    en: "turn-off",
+    ipa: "/ˈtɜːn ɒf/",
+    pos: "n.",
+    zh: "令人反感/无兴趣的东西",
+    example: "Too much jargon makes science an instant turn-off.",
+    tags: ["day8", "core"],
+    star: true
+  },
+  {
+    en: "get goosebumps",
+    ipa: "/ɡet ˈɡuːsbʌmps/",
+    pos: "短语",
+    zh: "起鸡皮疙瘩（因感动/寒冷/害怕）",
+    example: "It still gives me goosebumps when I hear it now.",
+    tags: ["day8", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "stroke",
+    ipa: "/strəʊk/",
+    pos: "n.",
+    zh: "中风",
+    example: "Maria's poem is about a friend who suffered a stroke.",
+    tags: ["day8", "ielts"],
+    star: false
+  },
+  {
+    en: "heal",
+    ipa: "/hiːl/",
+    pos: "v.",
+    zh: "治愈；愈合",
+    example: "Poetry has the power to heal emotions.",
+    tags: ["day8", "ielts"],
+    star: false
+  },
+
+  // —— Day 9 官方核心词 + 补充（Living with debt） ——
+  {
+    en: "pay off",
+    ipa: "/peɪ ɒf/",
+    pos: "短语",
+    zh: "还清（债务）（= pay back / clear）",
+    example: "I could clear them all one day, even if it means five years paying them off.",
+    tags: ["day9", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "in arrears",
+    ipa: "/ɪn əˈrɪəz/",
+    pos: "习语",
+    zh: "拖欠（本应已付的钱）",
+    example: "Many residents were in arrears with their monthly payments.",
+    tags: ["day9", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "the never-never",
+    ipa: "/ðə ˌnevə ˈnevə/",
+    pos: "习语",
+    zh: "分期付款（英式口语）",
+    example: "Jason was living on the never-never.",
+    tags: ["day9", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "financial strain",
+    ipa: "/faɪˌnænʃl ˈstreɪn/",
+    pos: "n.",
+    zh: "经济压力",
+    example: "The financial strain on him and his partner increased.",
+    tags: ["day9", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "overdraft",
+    ipa: "/ˈəʊvədrɑːft/",
+    pos: "n.",
+    zh: "透支（额度）",
+    example: "British adults are in debt through credit cards, overdrafts and personal loans.",
+    tags: ["day9"],
+    star: false
+  },
+  {
+    en: "fluctuate",
+    ipa: "/ˈflʌktʃueɪt/",
+    pos: "v.",
+    zh: "波动；起伏不定",
+    example: "Jason fluctuated between wanting to clear his debts and living on the never-never.",
+    tags: ["day9", "ielts"],
+    star: true
+  },
+  {
+    en: "distress",
+    ipa: "/dɪˈstres/",
+    pos: "n.",
+    zh: "痛苦；困苦",
+    example: "For those on low incomes, debt can cause serious distress.",
+    tags: ["day9", "ielts"],
+    star: false
+  },
+  {
+    en: "moral obligation",
+    ipa: "/ˌmɒrəl ˌɒblɪˈɡeɪʃn/",
+    pos: "n.",
+    zh: "道德义务",
+    example: "He questioned the supposed moral obligation to pay his debts.",
+    tags: ["day9", "phrase"],
+    star: false
+  },
+
+  // —— Day 10 官方核心词 + 补充（Making cities feel quieter） ——
+  {
+    en: "decibel",
+    ipa: "/ˈdesɪbel/",
+    pos: "n.",
+    zh: "分贝",
+    example: "Daytime noise levels in Mumbai regularly hit 80 decibels.",
+    tags: ["day10", "core"],
+    star: true
+  },
+  {
+    en: "dress loud",
+    ipa: "/dres laʊd/",
+    pos: "短语",
+    zh: "穿得花哨张扬",
+    example: "We dress loud, we talk loud, we celebrate loud.",
+    tags: ["day10", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "handle",
+    ipa: "/ˈhændl/",
+    pos: "v.",
+    zh: "应对；处理（难题）",
+    example: "When I got back, I realised I couldn't handle the noise anymore.",
+    tags: ["day10", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "art installation",
+    ipa: "/ˈɑːt ˌɪnstəˌleɪʃn/",
+    pos: "n.",
+    zh: "艺术装置",
+    example: "He set up an immersive sound art installation in the park.",
+    tags: ["day10", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "squeaky",
+    ipa: "/ˈskwiːki/",
+    pos: "adj.",
+    zh: "吱吱作响的；尖声的",
+    example: "The sand makes some squeaky sounds when you walk on it.",
+    tags: ["day10", "core"],
+    star: true
+  },
+  {
+    en: "counterintuitive",
+    ipa: "/ˌkaʊntərɪnˈtjuːɪtɪv/",
+    pos: "adj.",
+    zh: "反直觉的",
+    example: "It's counterintuitive, but you can make a park less noisy by adding calmer sounds.",
+    tags: ["day10", "core"],
+    star: true
+  },
+  {
+    en: "whisper",
+    ipa: "/ˈwɪspə/",
+    pos: "v. n.",
+    zh: "低语；耳语",
+    example: "How many decibels would it be if I whispered?",
+    tags: ["day10"],
+    star: false
+  },
+  {
+    en: "immersive",
+    ipa: "/ɪˈmɜːsɪv/",
+    pos: "adj.",
+    zh: "沉浸式的",
+    example: "an immersive sound art installation",
+    tags: ["day10", "ielts"],
+    star: false
+  },
+  {
+    en: "overseas",
+    ipa: "/ˌəʊvəˈsiːz/",
+    pos: "adv. adj.",
+    zh: "在海外（的）",
+    example: "Chhavi returned to India after living overseas.",
+    tags: ["day10", "ielts"],
+    star: false
+  },
+  {
+    en: "Mumbai",
+    ipa: "/mʊmˈbaɪ/",
+    pos: "地名",
+    zh: "孟买（印度城市）",
+    example: "Mumbai is one of the noisiest cities in the world.",
+    tags: ["day10", "recog"],
+    star: false
+  },
+  {
+    en: "India",
+    ipa: "/ˈɪndiə/",
+    pos: "地名",
+    zh: "印度",
+    example: "Chhavi returned to India after 12 years abroad.",
+    tags: ["day10", "recog"],
+    star: false
+  },
+  {
+    en: "the World Health Organisation",
+    ipa: "/wɜːld helθ ˌɔːɡənaɪˈzeɪʃn/",
+    pos: "专名",
+    zh: "世界卫生组织（WHO）",
+    example: "20 decibels higher than World Health Organisation recommendations",
+    tags: ["day10", "recog"],
+    star: false
+  },
+
+  // —— Day 11 官方核心词 + 补充（How reading shapes your brain） ——
+  {
+    en: "natural",
+    ipa: "/ˈnætʃrəl/",
+    pos: "adj.",
+    zh: "天生的；自然的",
+    example: "We think of language as natural, but reading isn't natural at all.",
+    tags: ["day11", "core"],
+    star: true
+  },
+  {
+    en: "dedicated",
+    ipa: "/ˈdedɪkeɪtɪd/",
+    pos: "adj.",
+    zh: "专用的；专门的",
+    example: "Our brain hasn't had time to develop a dedicated reading network.",
+    tags: ["day11", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "co-opt",
+    ipa: "/ˌkəʊˈɒpt/",
+    pos: "v.",
+    zh: "挪用；拉…来用",
+    example: "To read, we co-opt parts of the brain involved in vision and language.",
+    tags: ["day11", "core"],
+    star: true
+  },
+  {
+    en: "circuit",
+    ipa: "/ˈsɜːkɪt/",
+    pos: "n.",
+    zh: "回路；线路",
+    example: "The brain's circuit reflects the requirements of Chinese.",
+    tags: ["day11", "core"],
+    star: true
+  },
+  {
+    en: "inevitably",
+    ipa: "/ɪnˈevɪtəbli/",
+    pos: "adv.",
+    zh: "不可避免地",
+    example: "Chinese characters inevitably mean more visual processing.",
+    tags: ["day11", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "intricate",
+    ipa: "/ˈɪntrɪkət/",
+    pos: "adj.",
+    zh: "精细复杂的",
+    example: "those beautifully intricate symbols or characters",
+    tags: ["day11", "core"],
+    star: true
+  },
+  {
+    en: "evolve",
+    ipa: "/ɪˈvɒlv/",
+    pos: "v.",
+    zh: "进化；逐步发展",
+    example: "Our brains haven't evolved to include a dedicated reading brain.",
+    tags: ["day11", "ielts"],
+    star: true
+  },
+  {
+    en: "auditory",
+    ipa: "/ˈɔːdətri/",
+    pos: "adj.",
+    zh: "听觉的",
+    example: "parts of the brain involved in vision and auditory processing",
+    tags: ["day11"],
+    star: false
+  },
+  {
+    en: "symbol",
+    ipa: "/ˈsɪmbl/",
+    pos: "n.",
+    zh: "符号；象征",
+    example: "the visual qualities of Chinese symbols",
+    tags: ["day11", "ielts"],
+    star: false
+  },
+
+  // —— Day 12 官方核心词 + 补充（Searching for life on another planet） ——
+  {
+    en: "zone",
+    ipa: "/zəʊn/",
+    pos: "n.",
+    zh: "地带；区域",
+    example: "The planet exists in the habitable zone around its sun.",
+    tags: ["day12", "core"],
+    star: true
+  },
+  {
+    en: "potential",
+    ipa: "/pəˈtenʃl/",
+    pos: "adj. n.",
+    zh: "潜在的；潜力",
+    example: "Scientists are looking at the potential atmosphere around TRAPPIST-1e.",
+    tags: ["day12", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "rule out",
+    ipa: "/ruːl aʊt/",
+    pos: "短语",
+    zh: "排除（可能性）",
+    example: "They've ruled out that it's full of hydrogen or carbon dioxide.",
+    tags: ["day12", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "dominate",
+    ipa: "/ˈdɒmɪneɪt/",
+    pos: "v.",
+    zh: "主导；支配",
+    example: "It might be a nitrogen-dominated atmosphere.",
+    tags: ["day12", "core", "ielts"],
+    star: true
+  },
+  {
+    en: "fingers crossed",
+    ipa: "/ˌfɪŋɡəz ˈkrɒst/",
+    pos: "习语",
+    zh: "祈祷好运；但愿如此",
+    example: "Fingers crossed it has nitrogen.",
+    tags: ["day12", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "greenhouse gas",
+    ipa: "/ˈɡriːnhaʊs ɡæs/",
+    pos: "n.",
+    zh: "温室气体",
+    example: "Hydrogen and carbon dioxide are greenhouse gases.",
+    tags: ["day12", "phrase", "ielts"],
+    star: true
+  },
+  {
+    en: "carbon dioxide",
+    ipa: "/ˌkɑːbən daɪˈɒksaɪd/",
+    pos: "n.",
+    zh: "二氧化碳",
+    example: "Greenhouse gases like carbon dioxide would make the planet really hot.",
+    tags: ["day12", "ielts"],
+    star: false
+  },
+  {
+    en: "nitrogen",
+    ipa: "/ˈnaɪtrədʒən/",
+    pos: "n.",
+    zh: "氮气",
+    example: "There are clues that it might be a nitrogen-dominated atmosphere.",
+    tags: ["day12"],
+    star: false
+  },
+  {
+    en: "clue",
+    ipa: "/kluː/",
+    pos: "n.",
+    zh: "线索",
+    example: "another clue that there could be life there",
+    tags: ["day12"],
+    star: false
+  },
+
+  // —— Day 13 官方核心词 + 补充（Why are we all so stressed?） ——
+  {
+    en: "sharpen the mind",
+    ipa: "/ˌʃɑːpən ðə ˈmaɪnd/",
+    pos: "短语",
+    zh: "使头脑清醒（= concentrate the mind）",
+    example: "Nerves sharpen your thinking and allow you to do your best.",
+    tags: ["day13", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "nerves",
+    ipa: "/nɜːvz/",
+    pos: "n.",
+    zh: "紧张；焦虑（口语）",
+    example: "It's normal to feel nerves before an exam.",
+    tags: ["day13", "core"],
+    star: true
+  },
+  {
+    en: "one-size-fits-all",
+    ipa: "/ˌwʌn saɪz fɪts ˈɔːl/",
+    pos: "adj.",
+    zh: "一刀切的；万能的",
+    example: "There's no one-size-fits-all solution to stress.",
+    tags: ["day13", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "to-do list",
+    ipa: "/tə ˈduː lɪst/",
+    pos: "n.",
+    zh: "待办事项清单",
+    example: "Accept that your to-do list is never going to end.",
+    tags: ["day13", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "combat",
+    ipa: "/ˈkɒmbæt/",
+    pos: "v.",
+    zh: "对抗；防止",
+    example: "There are many ways to combat stress.",
+    tags: ["day13", "ielts"],
+    star: false
+  },
+  {
+    en: "exhaustion",
+    ipa: "/ɪɡˈzɔːstʃən/",
+    pos: "n.",
+    zh: "精疲力竭",
+    example: "Burnout is mental or physical exhaustion caused by working too hard.",
+    tags: ["day13", "ielts"],
+    star: false
+  },
+
+  // —— Day 14 官方核心词 + 补充（Ultra-processed food / Meeting an old friend） ——
+  {
+    en: "ready meal",
+    ipa: "/ˌredi ˈmiːl/",
+    pos: "n.",
+    zh: "（超市）即食餐",
+    example: "With a ready meal, you put it in the microwave for a couple of minutes.",
+    tags: ["day14", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "from scratch",
+    ipa: "/frəm ˈskrætʃ/",
+    pos: "习语",
+    zh: "从零开始",
+    example: "Cooking a fresh meal from scratch can take a really long time.",
+    tags: ["day14", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "guilty pleasure",
+    ipa: "/ˌɡɪlti ˈpleʒə/",
+    pos: "n.",
+    zh: "罪恶快感；明知不好却喜欢的东西",
+    example: "Chocolate is my guilty pleasure.",
+    tags: ["day14", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "once in a while",
+    ipa: "/ˌwʌns ɪn ə ˈwaɪl/",
+    pos: "短语",
+    zh: "偶尔",
+    example: "Is it OK to have a packet of crisps once in a while?",
+    tags: ["day14", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "from time to time",
+    ipa: "/frəm ˌtaɪm tə ˈtaɪm/",
+    pos: "短语",
+    zh: "不时；偶尔",
+    example: "a way for us to still enjoy them from time to time",
+    tags: ["day14", "core", "phrase"],
+    star: false
+  },
+  {
+    en: "everything in moderation",
+    ipa: "/ˌevriθɪŋ ɪn ˌmɒdəˈreɪʃn/",
+    pos: "习语",
+    zh: "凡事适度",
+    example: "Everything is fine in moderation.",
+    tags: ["day14", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "cut out",
+    ipa: "/kʌt aʊt/",
+    pos: "短语",
+    zh: "戒掉；剔除",
+    example: "Should we cut ultra-processed foods out of our diets completely?",
+    tags: ["day14", "phrase"],
+    star: true
+  },
+  {
+    en: "microwave",
+    ipa: "/ˈmaɪkrəweɪv/",
+    pos: "n.",
+    zh: "微波炉",
+    example: "Put the ready meal in the microwave for a couple of minutes.",
+    tags: ["day14"],
+    star: false
+  },
+  {
+    en: "work out",
+    ipa: "/wɜːk aʊt/",
+    pos: "短语",
+    zh: "成功；行得通；解决",
+    example: "I was in London for a couple of years, but it didn't work out.",
+    tags: ["day14", "phrase"],
+    star: true
+  },
+  {
+    en: "come round",
+    ipa: "/kʌm raʊnd/",
+    pos: "短语",
+    zh: "（到某人家）串门",
+    example: "You should really come round to the house one day.",
+    tags: ["day14", "phrase"],
+    star: false
+  },
+  {
+    en: "swap numbers",
+    ipa: "/swɒp ˈnʌmbəz/",
+    pos: "短语",
+    zh: "交换电话号码",
+    example: "Let's swap numbers and keep in touch.",
+    tags: ["day14", "phrase"],
+    star: false
+  },
+  {
+    en: "it's been ages",
+    ipa: "/ɪts biːn ˈeɪdʒɪz/",
+    pos: "口语",
+    zh: "好久不见了",
+    example: "It's been ages — at least fifteen years!",
+    tags: ["day14", "recog", "phrase"],
+    star: true
+  },
+  {
+    en: "how time flies",
+    ipa: "/haʊ taɪm ˈflaɪz/",
+    pos: "口语",
+    zh: "时间过得真快",
+    example: "I'm just amazed how time flies!",
+    tags: ["day14", "recog", "phrase"],
+    star: true
   }
 ];
