@@ -578,6 +578,62 @@
     .listen-play:active { transform: scale(0.93); }
     /* 每日目标条：达标后换竹青色 */
     .hero-bar i.daily.met { background: linear-gradient(90deg, #7fb28c, #b5d4bd); }
+    /* 例句块：大字号 + 目标词高亮 + 朗读 + 翻译 */
+    .ex-block {
+      position: relative;
+      margin: 16px auto 0;
+      padding: 12px 40px 12px 16px;
+      border-left: 3px solid var(--gold);
+      background: rgba(127, 127, 127, 0.07);
+      border-radius: 0 12px 12px 0;
+      text-align: left;
+    }
+    .ex-en {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .ex-en .ex-hl { color: var(--gold); font-weight: 700; }
+    .ex-zh {
+      margin-top: 7px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+    .ex-speak {
+      position: absolute; top: 8px; right: 6px;
+      border: none; background: transparent;
+      font-size: 1.1rem; padding: 4px;
+      cursor: pointer; opacity: 0.75;
+    }
+    .ex-speak:active { transform: scale(0.9); }
+    /* 短语词块拼凑 */
+    .chunk-answer {
+      min-height: 50px;
+      margin: 14px 0 12px;
+      padding: 8px;
+      border: 1.5px dashed var(--line);
+      border-radius: 14px;
+      display: flex; flex-wrap: wrap; gap: 7px;
+      justify-content: center; align-items: center;
+    }
+    .chunk-placeholder { color: var(--muted); font-size: 0.82rem; }
+    .chunk-pool {
+      display: flex; flex-wrap: wrap; gap: 9px;
+      justify-content: center;
+    }
+    .chunk {
+      padding: 9px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      font-size: 0.98rem; font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .chunk:active { transform: scale(0.94); }
+    .chunk.picked-slot { border-color: var(--accent); color: var(--accent); }
     /* 云同步 token 输入框 */
     .sync-input {
       display: block; width: 100%; box-sizing: border-box;
@@ -1737,6 +1793,101 @@
       document.getElementById("kbdHint").textContent = hint || "";
     }
 
+    // —— 例句展示：目标词高亮 + 🔊 朗读 + 中文翻译 ——
+    /** 把例句按目标词切段：返回 [文本, 是否高亮] 列表（容忍词尾变化） */
+    function hlSplit(text, en) {
+      const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const stem = (x) => x.replace(/(ing|ed|es|s|e)$/i, "");
+      const pats = [en];
+      en.split(/\s+/).forEach(x => {
+        const s = stem(x);
+        if (s.length >= 3 && /[a-z]/i.test(s)) pats.push(s);
+      });
+      const sorted = [...new Set(pats)].sort((a, b) => b.length - a.length);
+      const re = new RegExp("\\b(" + sorted.map(p => esc(p) + "[a-z]*").join("|") + ")", "gi");
+      const out = [];
+      let last = 0, m;
+      while ((m = re.exec(text))) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        if (m.index > last) out.push([text.slice(last, m.index), false]);
+        out.push([m[0], true]);
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) out.push([text.slice(last), false]);
+      return out;
+    }
+    /** 例句块 HTML：英文（目标词加重）+ 朗读按钮 + 中文翻译 */
+    function exampleHtml(w) {
+      if (!w.example) return "";
+      const body = hlSplit(w.example, w.en)
+        .map(([s, hl]) => hl ? `<b class="ex-hl">${escapeHtml(s)}</b>` : escapeHtml(s))
+        .join("");
+      return `
+        <div class="ex-block">
+          <button class="ex-speak" type="button" title="🔊" data-say="${escapeHtml(w.example)}">🔊</button>
+          <div class="ex-en">${body}</div>
+          ${w.exampleZh ? `<div class="ex-zh">${escapeHtml(w.exampleZh)}</div>` : ""}
+        </div>`;
+    }
+
+    // —— 短语词块拼凑 ——
+    function isPhrase(w) { return /\s/.test(String(w.en).trim()); }
+    /** 生成词块：答案单词 + 干扰块（常见功能词 + 其他短语的实词） */
+    function buildChunks(w) {
+      const answer = w.en.split(/\s+/);
+      const lowerAns = answer.map(a => a.toLowerCase());
+      const fillers = ["of", "on", "in", "to", "up", "out", "for", "with", "at", "the", "a", "your", "off", "down", "over"];
+      const others = allWords()
+        .filter(x => x.en !== w.en && /\s/.test(x.en))
+        .flatMap(x => x.en.split(/\s+/))
+        .filter(x => x.length >= 3);
+      const nDistract = Math.min(4, Math.max(2, Math.ceil(answer.length / 2)));
+      const distractors = [];
+      for (const c of shuffle([...fillers, ...others])) {
+        if (distractors.length >= nDistract) break;
+        const lc = c.toLowerCase();
+        if (!lowerAns.includes(lc) && !distractors.some(d => d.toLowerCase() === lc)) distractors.push(c);
+      }
+      return shuffle([...answer, ...distractors]).map((text, id) => ({ id, text }));
+    }
+    /** 重画词块区：上面是已拼的（点击撤回），下面是待选池（点击加入） */
+    function renderChunkBoard() {
+      const ch = session.chunk;
+      if (!ch) return;
+      const ansEl = document.getElementById("chunkAnswer");
+      const poolEl = document.getElementById("chunkPool");
+      if (!ansEl || !poolEl) return;
+      ansEl.innerHTML = ch.picked.length
+        ? ch.picked.map(t =>
+            `<button class="chunk picked-slot" type="button" data-cid="${t.id}">${escapeHtml(t.text)}</button>`).join("")
+        : `<span class="chunk-placeholder">${t("chunks.placeholder")}</span>`;
+      const pickedIds = new Set(ch.picked.map(t => t.id));
+      poolEl.innerHTML = ch.tiles
+        .filter(t => !pickedIds.has(t.id))
+        .map(t => `<button class="chunk" type="button" data-cid="${t.id}">${escapeHtml(t.text)}</button>`).join("");
+    }
+    function initChunks(w) {
+      session.chunk = { tiles: buildChunks(w), picked: [], answer: w.en };
+      renderChunkBoard();
+    }
+    /** 提示：自动放上下一个正确词块 */
+    function chunkHint() {
+      const ch = session.chunk;
+      if (!ch) return;
+      const answer = ch.answer.split(/\s+/);
+      // 已拼部分若有错，先撤掉错误尾部
+      while (ch.picked.length &&
+             ch.picked[ch.picked.length - 1].text.toLowerCase() !== (answer[ch.picked.length - 1] || "").toLowerCase()) {
+        ch.picked.pop();
+      }
+      const next = answer[ch.picked.length];
+      if (!next) { renderChunkBoard(); return; }
+      const pickedIds = new Set(ch.picked.map(t => t.id));
+      const tile = ch.tiles.find(t => !pickedIds.has(t.id) && t.text.toLowerCase() === next.toLowerCase());
+      if (tile) ch.picked.push(tile);
+      renderChunkBoard();
+    }
+
     function renderCard() {
       updateSessionHud();
       const item = current();
@@ -1747,6 +1898,7 @@
       fb.innerHTML = "";
       session.revealed = false;
       session.hintLevel = 0;
+      session.chunk = null;
 
       if (!item) {
         empty.style.display = "block";
@@ -1784,7 +1936,7 @@
           <div class="en-big">${escapeHtml(w.en)}</div>
           <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
           <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
-          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          ${exampleHtml(w)}
         `;
         setTimeout(() => speak(w.en), 200);
         setBar(
@@ -1811,7 +1963,7 @@
           <div id="readReveal" style="display:none;margin-top:12px">
             <div class="en-big">${escapeHtml(w.en)}</div>
             <div class="prompt-ipa">${escapeHtml(w.ipa || "")}</div>
-            ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+            ${exampleHtml(w)}
           </div>
         `;
         setBar(
@@ -1823,26 +1975,38 @@
           t("kbd.read")
         );
       } else if (item.mode === "listen") {
-        // 听写：只放声音，不给中文和拼写
+        // 听写：只放声音，不给中文和拼写；短语用词块拼
+        const phrase = isPhrase(w);
         pill.className = "stage-pill listen";
         pill.textContent = t("pill.listen");
-        document.getElementById("flowTip").textContent = t("learn.tipListen");
+        document.getElementById("flowTip").textContent =
+          phrase ? t("learn.tipListenChunks") : t("learn.tipListen");
         main.innerHTML = `
           <button class="listen-play" id="btnListenPlay" type="button" aria-label="play">🔊</button>
           <div class="prompt-meta">${t("listen.think")}</div>
           <div class="hint-line" id="spellHint"></div>
-          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("listen.placeholder")}" />
+          ${phrase
+            ? `<div class="chunk-answer" id="chunkAnswer"></div><div class="chunk-pool" id="chunkPool"></div>`
+            : `<input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("listen.placeholder")}" />`}
         `;
         document.getElementById("btnListenPlay").onclick = () => speak(w.en);
         setTimeout(() => speak(w.en), 250);
         const input = document.getElementById("answer");
-        setTimeout(() => input && input.focus(), 80);
+        if (phrase) initChunks(w);
+        else setTimeout(() => input && input.focus(), 80);
         setBar(
           [{ label: t("btn.check"), onClick: checkSpell }],
           [
             {
               label: t("btn.hint"),
               onClick: () => {
+                if (phrase) {
+                  // 词块提示：第一下给中文，之后自动放上正确词块
+                  session.hintLevel += 1;
+                  if (session.hintLevel === 1) document.getElementById("spellHint").textContent = w.zh || "";
+                  else chunkHint();
+                  return;
+                }
                 // 听写提示：第一级先给中文，再逐级露字母
                 session.hintLevel = Math.min(4, session.hintLevel + 1);
                 document.getElementById("spellHint").textContent =
@@ -1857,7 +2021,7 @@
           ],
           t("kbd.enter")
         );
-        input.addEventListener("keydown", e => {
+        if (input) input.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             if (session.revealed) nextItem();
@@ -1865,24 +2029,30 @@
           }
         });
       } else {
-        // spell
+        // spell：单词打字拼写；短语改为词块拼凑
+        const phrase = isPhrase(w);
         pill.className = "stage-pill spell";
-        pill.textContent = t("pill.spell");
-        document.getElementById("flowTip").textContent = t("learn.tipSpell");
+        pill.textContent = phrase ? t("pill.chunks") : t("pill.spell");
+        document.getElementById("flowTip").textContent =
+          phrase ? t("learn.tipChunks") : t("learn.tipSpell");
         main.innerHTML = `
           <div class="prompt-zh">${escapeHtml(w.zh || "")}</div>
           <div class="prompt-ipa" id="spellIpaHint" style="opacity:0.55">${escapeHtml(w.ipa || t("spell.ipaHint"))}</div>
           <div class="hint-line" id="spellHint"></div>
-          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("spell.placeholder")}" />
+          ${phrase
+            ? `<div class="chunk-answer" id="chunkAnswer"></div><div class="chunk-pool" id="chunkPool"></div>`
+            : `<input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("spell.placeholder")}" />`}
         `;
         const input = document.getElementById("answer");
-        setTimeout(() => input && input.focus(), 80);
+        if (phrase) initChunks(w);
+        else setTimeout(() => input && input.focus(), 80);
         setBar(
           [{ label: t("btn.check"), onClick: checkSpell }],
           [
             {
               label: t("btn.hint"),
               onClick: () => {
+                if (phrase) { chunkHint(); return; }
                 session.hintLevel = Math.min(3, session.hintLevel + 1);
                 document.getElementById("spellHint").textContent =
                   makeHint(w.en, session.hintLevel);
@@ -1894,7 +2064,7 @@
           ],
           t("kbd.enter")
         );
-        input.addEventListener("keydown", e => {
+        if (input) input.addEventListener("keydown", e => {
           if (e.key === "Enter") {
             e.preventDefault();
             if (session.revealed) nextItem();
@@ -1974,9 +2144,13 @@
         return;
       }
       const w = item.word;
+      const chunkMode = !!session.chunk;
       const input = document.getElementById("answer");
-      if (!input) return;
-      const user = normKey(input.value);
+      if (!chunkMode && !input) return;
+      const userRaw = chunkMode
+        ? session.chunk.picked.map(x => x.text).join(" ")
+        : input.value;
+      const user = normKey(userRaw);
       if (!user) return;
       const isListen = item.mode === "listen";
       const answer = normKey(w.en);
@@ -1988,7 +2162,7 @@
       const zhLine = isListen && w.zh ? `<div class="example">${escapeHtml(w.zh)}</div>` : "";
 
       if (user === answer) {
-        input.className = "ok";
+        if (input) input.className = "ok";
         if (isListen) pr.listenOk += 1; else pr.spellOk += 1;
         session.spellOk += 1;
         scheduleWord(w.en, true);
@@ -1996,11 +2170,11 @@
         fb.className = "feedback show ok";
         fb.innerHTML = `${t("fb.spellOk")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
           ${zhLine}
-          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          ${exampleHtml(w)}
           <div class="example" style="margin-top:6px">${t("fb.enter")}</div>`;
         speak(w.en);
       } else {
-        input.className = "bad";
+        if (input) input.className = "bad";
         if (isListen) pr.listenWrong += 1; else pr.spellWrong += 1;
         pr.mastered = false;
         session.spellWrong += 1;
@@ -2008,8 +2182,8 @@
         fb.className = "feedback show bad";
         fb.innerHTML = `${t("fb.spellBad")}<div class="ans">${t("fb.answer")}${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
           ${zhLine}
-          <div class="example">${t("fb.yours")}${escapeHtml(input.value)}</div>
-          ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
+          <div class="example">${t("fb.yours")}${escapeHtml(userRaw)}</div>
+          ${exampleHtml(w)}
           <div class="example" style="margin-top:6px">${t("fb.requeued")}</div>`;
         requeueWrong(item);
         // 错词也加强认读
@@ -2025,6 +2199,24 @@
       updateSessionHud();
       updateStats();
     }
+
+    // 例句朗读 + 词块点击（feedback 是 innerHTML 注入的，用事件代理）
+    document.getElementById("learnCard").addEventListener("click", (e) => {
+      const sp = e.target.closest(".ex-speak");
+      if (sp) { speak(sp.dataset.say); return; }
+      const tile = e.target.closest(".chunk[data-cid]");
+      if (tile && session.chunk && !session.revealed) {
+        const id = Number(tile.dataset.cid);
+        const ch = session.chunk;
+        const idx = ch.picked.findIndex(x => x.id === id);
+        if (idx >= 0) ch.picked.splice(idx, 1);          // 已拼的：点击撤回
+        else {
+          const t2 = ch.tiles.find(x => x.id === id);
+          if (t2) ch.picked.push(t2);                    // 池里的：点击加入
+        }
+        renderChunkBoard();
+      }
+    });
 
     function requeueWrong(item) {
       // 插到后面一点，避免立刻重复太烦，但本轮会再遇到
@@ -2257,7 +2449,11 @@
         "pill.read": "② 认读自测 · 你认识吗？",
         "pill.spell": "③ 拼写练习 · 写出英文",
         "pill.listen": "④ 听写挑战 · 听音拼词",
+        "pill.chunks": "③ 词块拼凑 · 拼出短语",
         "learn.tipListen": "只听发音（英音），拼出这个词。点 🔊 可重听，提示先给中文再露字母。",
+        "learn.tipChunks": "点选下方词块，按顺序拼出这个短语。里面混了干扰块，点错可点击撤回。",
+        "learn.tipListenChunks": "听发音，用词块拼出你听到的短语。点 🔊 可重听。",
+        "chunks.placeholder": "点下方词块，拼在这里",
         "listen.think": "🎧 听到了什么？",
         "listen.placeholder": "输入你听到的单词…",
         "meta.star": "★重点", "meta.recog": "🏷️认读即可", "meta.stats": "拼错{a} 认错{b}",
@@ -2369,7 +2565,11 @@
         "pill.read": "② Recall · do you know it?",
         "pill.spell": "③ Spell · type the word",
         "pill.listen": "④ Dictation · type what you hear",
+        "pill.chunks": "③ Build the phrase",
         "learn.tipListen": "Listen (British audio) and type the word. Tap 🔊 to replay; hints give meaning first, then letters.",
+        "learn.tipChunks": "Tap the chunks below in order to build the phrase. Distractors included — tap a placed chunk to remove it.",
+        "learn.tipListenChunks": "Listen, then build the phrase you heard from the chunks. Tap 🔊 to replay.",
+        "chunks.placeholder": "Tap chunks below to build here",
         "listen.think": "🎧 What did you hear?",
         "listen.placeholder": "Type what you heard…",
         "meta.star": "★ key", "meta.recog": "🏷️ recognition only", "meta.stats": "spell ✗{a} · read ✗{b}",

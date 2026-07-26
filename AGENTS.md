@@ -13,7 +13,7 @@
 ## 加词汇时（最高频任务）
 
 1. **只改** `words.js` 里的 `window.VOCAB_BANK` 数组（追加对象）。  
-2. 每条必须有：`en`、`zh`；尽量有：`ipa`、`pos`、`example`、`tags`、`star`。  
+2. 每条必须有：`en`、`zh`；尽量有：`ipa`、`pos`、`example`、`exampleZh`（例句中文翻译，卡片上会显示）、`tags`、`star`。  
 3. 音标用 IPA，英式优先，写成 `"/ˈæmpl/"` 这种带斜杠形式。  
 4. `tags` 用已有约定：`dayN`、`core`（官方重点词）、`phrase`、`ielts`、`recog`（认读词：地名/专名等，只认读不进拼写关）、`preview`（预习章节，材料还没学到）等。  
 5. **不要**重复相同的 `en`（大小写/空格规范化后视为同一词）。  
@@ -39,6 +39,7 @@ git push origin main
   pos: "n.",
   zh: "中文释义",
   example: "Example sentence.",
+  exampleZh: "例句中文翻译。",
   tags: ["day2"],
   star: false
 },
@@ -54,7 +55,8 @@ git push origin main
 - 新章节标题记得同时补 `VOCAB_CHAPTERS` 与 `VOCAB_CHAPTERS_EN`。
 
 - 逻辑几乎全在 `index.html` 内联脚本。  
-- 学习模式有四种：`teach` → `read` → `spell` / `listen`（听写，拼对过的词随机升级；`recog` 词只走 read）。  
+- 学习模式有四种：`teach` → `read` → `spell` / `listen`（听写，拼对过的词随机升级；`recog` 词只走 read）。含空格的短语在 spell/listen 关自动变成**词块拼凑**（`buildChunks` 生成答案块+干扰块）。  
+- 例句用 `exampleHtml(w)` 渲染（目标词高亮 + 🔊 朗读 + `exampleZh` 翻译），不要再手写 `<div class="example">` 放例句。  
 - 间隔重复：`scheduleWord(en, ok)`（SM-2 简化阶梯 1→3→×ease），`isDue()` 判到期；范围下拉有「今日复习」，首页有到期 banner。答题终点（spell/listen 判分、read 认错、recog 词 read 认对）都要调 `scheduleWord`。  
 - 打卡：`daily`（`ielts_vocab_daily_v1`，`{goal, days:{日期:{n,ok}}}`）；所有判分点都要调 `bumpDaily(ok)`；streak/目标显示在 hero 第二行，`updateDailyHud()` 刷新。  
 - 改完 **必须** 把 `sw.js` 的 `CACHE` 字符串版本号递增（如 `v2` → `v3`），否则手机可能一直离线旧页。  
