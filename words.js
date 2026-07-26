@@ -26,7 +26,8 @@ window.VOCAB_CHAPTERS = {
   day3: "Day 3 · 无礼的邮件",
   day4: "Day 4 · 轻松的家庭晚餐",
   day5: "Day 5 · 限制孩子的屏幕时间",
-  day6: "Day 6 · 广告商如何让我们花钱"
+  day6: "Day 6 · 广告商如何让我们花钱",
+  day7: "Day 7 · 客户来电（复习日）"
 };
 
 /** 英文界面下的章节标题（缺省回落到 "Day N"） */
@@ -36,7 +37,8 @@ window.VOCAB_CHAPTERS_EN = {
   day3: "Day 3 · Rude emails",
   day4: "Day 4 · Stress-free family meals",
   day5: "Day 5 · Limiting screen time for children",
-  day6: "Day 6 · How advertisers make us spend money"
+  day6: "Day 6 · How advertisers make us spend money",
+  day7: "Day 7 · A phone call from a customer"
 };
 
 window.VOCAB_BANK = [
@@ -1036,6 +1038,98 @@ window.VOCAB_BANK = [
     zh: "交易；一笔买卖",
     example: "the total amount that someone spends in one transaction",
     tags: ["day6", "ielts"],
+    star: false
+  },
+
+  // —— Day 7 · A phone call from a customer（BC Listening B1 · 复习日）——
+  {
+    en: "payment terms",
+    ipa: "/ˈpeɪmənt tɜːmz/",
+    pos: "n.",
+    zh: "付款条件；付款期限",
+    example: "I need an extension on the payment terms.",
+    tags: ["day7", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "extension",
+    ipa: "/ɪkˈstenʃn/",
+    pos: "n.",
+    zh: "延期；延长",
+    example: "Could we extend the payment terms to 60 days?",
+    tags: ["day7", "core"],
+    star: true
+  },
+  {
+    en: "cash flow",
+    ipa: "/ˈkæʃ fləʊ/",
+    pos: "n.",
+    zh: "现金流；资金周转",
+    example: "We're having some cash flow problems.",
+    tags: ["day7", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "invoice",
+    ipa: "/ˈɪnvɔɪs/",
+    pos: "n.",
+    zh: "发票；账单",
+    example: "Andrea called about the invoice for the latest order.",
+    tags: ["day7", "core"],
+    star: true
+  },
+  {
+    en: "make an exception",
+    ipa: "/meɪk ən ɪkˈsepʃn/",
+    pos: "短语",
+    zh: "破例；特殊处理",
+    example: "I think we can make an exception this time.",
+    tags: ["day7", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "it works both ways",
+    ipa: "/ɪt wɜːks bəʊθ ˈweɪz/",
+    pos: "习语",
+    zh: "对双方都有利；是相互的",
+    example: "We appreciate your business. It works both ways.",
+    tags: ["day7", "core", "phrase"],
+    star: true
+  },
+  {
+    en: "confirmation",
+    ipa: "/ˌkɒnfəˈmeɪʃn/",
+    pos: "n.",
+    zh: "确认；确认函",
+    example: "Could you send me a quick email confirmation?",
+    tags: ["day7"],
+    star: false
+  },
+  {
+    en: "appreciate",
+    ipa: "/əˈpriːʃieɪt/",
+    pos: "v.",
+    zh: "感激；重视",
+    example: "I really appreciate your help.",
+    tags: ["day7", "ielts"],
+    star: false
+  },
+  {
+    en: "pay on delivery",
+    ipa: "/peɪ ɒn dɪˈlɪvəri/",
+    pos: "短语",
+    zh: "货到付款",
+    example: "The new order is for a customer that pays on delivery.",
+    tags: ["day7", "phrase"],
+    star: false
+  },
+  {
+    en: "do someone a favour",
+    ipa: "/duː ˈsʌmwʌn ə ˈfeɪvə/",
+    pos: "短语",
+    zh: "帮某人一个忙",
+    example: "Do you ever do favours for important clients?",
+    tags: ["day7", "phrase"],
     star: false
   }
 ];
