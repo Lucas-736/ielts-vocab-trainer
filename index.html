@@ -329,9 +329,10 @@
       margin-bottom: 12px;
       border: 1px solid currentColor;
     }
-    .stage-pill.teach { color: var(--purple); }
-    .stage-pill.read  { color: var(--cyan); }
-    .stage-pill.spell { color: var(--gold); }
+    .stage-pill.teach  { color: var(--purple); }
+    .stage-pill.read   { color: var(--cyan); }
+    .stage-pill.spell  { color: var(--gold); }
+    .stage-pill.listen { color: var(--good); }
     .stage-pill.done  { color: var(--good); }
     .en-big {
       font-family: Georgia, "Times New Roman", "Songti SC", serif;
@@ -548,6 +549,33 @@
       display: flex; align-items: center; gap: 8px;
       margin-bottom: 14px; flex-wrap: wrap;
     }
+    /* 今日到期复习入口：有到期词才显示 */
+    .due-banner {
+      display: block; width: 100%;
+      margin: 0 0 12px;
+      padding: 11px 16px;
+      border: 1px dashed var(--gold);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--gold);
+      font-size: 0.86rem; font-family: inherit;
+      text-align: left; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .due-banner:hover { background: rgba(210, 171, 106, 0.08); }
+    /* 听写关的播放大按钮 */
+    .listen-play {
+      display: block;
+      margin: 6px auto 14px;
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      font-size: 2rem;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+    .listen-play:active { transform: scale(0.93); }
     .sel-wrap { position: relative; flex: 1 1 118px; min-width: 118px; }
     .sel-wrap::after {
       content: "▾";
@@ -787,6 +815,8 @@
         <button class="scope-icon" id="btnShuffle" type="button" title="打乱顺序">🔀</button>
       </div>
 
+      <button class="due-banner" id="dueBanner" type="button" style="display:none"></button>
+
       <button class="cta" id="btnStart" type="button">
         <span class="cta-main" data-i18n="home.start">开始学习</span>
         <span class="cta-sub" id="ctaSub">—</span>
@@ -1011,6 +1041,14 @@
         p.mastered = !!p.mastered;
         p.last = p.last ?? null;
       }
+      // migrate v2：听写计数 + 间隔重复字段（旧词 due=null 视为「立即到期」）
+      if (p.listenOk == null) {
+        p.listenOk = 0;
+        p.listenWrong = 0;
+        p.ivl = p.ivl ?? 0;
+        p.ease = p.ease ?? 2.5;
+        p.due = p.due ?? null;
+      }
       return p;
     }
 
@@ -1021,21 +1059,59 @@
         readWrong: 0,
         spellOk: 0,
         spellWrong: 0,
+        listenOk: 0,
+        listenWrong: 0,
         mastered: false,
-        last: null
+        last: null,
+        ivl: 0,      // 间隔（天）
+        ease: 2.5,   // 难度系数
+        due: null    // 下次复习时间戳；null=尚未排程（视为到期）
       };
+    }
+
+    // —— 间隔重复（SM-2 简化版）——
+    const DAY_MS = 86400000;
+    function endOfToday() {
+      const d = new Date();
+      d.setHours(23, 59, 59, 999);
+      return d.getTime();
+    }
+    /** 拼写/听写/认读定级后调用：答对沿 1→3→ivl×ease 阶梯延后，答错回到明天 */
+    function scheduleWord(en, ok) {
+      const p = getProg(en);
+      if (ok) {
+        if (p.ivl <= 0) p.ivl = 1;
+        else if (p.ivl === 1) p.ivl = 3;
+        else p.ivl = Math.round(p.ivl * p.ease);
+        p.ivl = Math.min(p.ivl, 180);
+        p.ease = Math.min(2.8, p.ease + 0.05);
+      } else {
+        p.ease = Math.max(1.3, p.ease - 0.2);
+        p.ivl = 0;
+      }
+      p.due = Date.now() + Math.max(1, p.ivl) * DAY_MS;
+    }
+    /** 已学过且复习时间到（含从未排程的旧进度） */
+    function isDue(en) {
+      const p = getProg(en);
+      return p.introduced && (p.due == null || p.due <= endOfToday());
     }
 
     /** 越高越优先练 */
     function weakScore(en) {
       const p = getProg(en);
-      if (p.mastered) return -100 + p.spellWrong + p.readWrong;
+      if (p.mastered && !isDue(en)) return -100 + p.spellWrong + p.readWrong;
       let s = 0;
       if (!p.introduced) s += 50; // 新词优先进入认读
-      s += p.spellWrong * 4;
+      s += (p.spellWrong + p.listenWrong) * 4;
       s += p.readWrong * 2.5;
-      s -= p.spellOk * 1.2;
+      s -= (p.spellOk + p.listenOk) * 1.2;
       s -= p.readOk * 0.8;
+      // 间隔重复：到期复习的词优先；还没到期的靠后，别挤占名额
+      if (p.introduced) {
+        if (isDue(en)) s += 8;
+        else s -= 20;
+      }
       // 最近错过的再抬一点
       if (p.last && Date.now() - p.last < 86400000) s += 1;
       return s;
@@ -1050,7 +1126,8 @@
     function isWeak(en) {
       const p = getProg(en);
       if (p.mastered) return false;
-      return p.spellWrong > 0 || p.readWrong > 0 || (p.spellWrong + p.readWrong) > (p.spellOk + p.readOk);
+      return p.spellWrong > 0 || p.readWrong > 0 || p.listenWrong > 0
+        || (p.spellWrong + p.readWrong + p.listenWrong) > (p.spellOk + p.readOk + p.listenOk);
     }
 
     function recomputeMastered(en) {
@@ -1072,6 +1149,7 @@
     function filteredWords() {
       let list = allWords();
       if (chapter !== "all") list = list.filter(w => chapterOf(w) === chapter);
+      if (filter === "due") list = list.filter(w => isDue(w.en));
       if (filter === "star") list = list.filter(w => w.star);
       if (filter === "core") list = list.filter(w => (w.tags || []).includes("core"));
       if (filter === "mastered") list = list.filter(w => getProg(w.en).mastered);
@@ -1101,6 +1179,7 @@
     // —— 选什么词：章节 × 范围 ——
     const SCOPES = [
       { id: "all", key: "filter.all" },
+      { id: "due", key: "filter.due" },
       { id: "new", key: "filter.new" },
       { id: "hard", key: "filter.hard" },
       { id: "star", key: "filter.star" },
@@ -1173,7 +1252,21 @@
         : t("home.startEmpty");
       document.getElementById("btnStart").disabled = !n;
       document.getElementById("btnStart").style.opacity = n ? "" : "0.5";
+
+      // 今日复习入口：当前章节下有到期词才显示
+      const banner = document.getElementById("dueBanner");
+      if (banner) {
+        const nDue = countInScope("due");
+        banner.style.display = nDue && filter !== "due" ? "block" : "none";
+        banner.textContent = t("home.due", { n: nDue });
+      }
     }
+    document.getElementById("dueBanner").onclick = () => {
+      filter = "due";
+      weakOnly = false;
+      refreshAll();
+      enterStudy(true);
+    };
 
     function showPanel(name) {
       document.querySelectorAll(".tab").forEach(el =>
@@ -1272,7 +1365,9 @@
           // 已认读过：薄弱优先认读再拼写；稳定词可直接拼写
           const needRead = p.readWrong > 0 || p.readOk < 1 || Math.random() < 0.35;
           if (needRead) q.push({ word: w, mode: "read" });
-          q.push({ word: w, mode: "spell" });
+          // 拼对过的词有一半概率升级成听写（听音辨词，贴近雅思听力）
+          const listen = p.spellOk >= 1 && Math.random() < 0.5;
+          q.push({ word: w, mode: listen ? "listen" : "spell" });
         }
       });
       // 轻微打乱同模式块，但 teach 尽量靠前（新词先学）
@@ -1426,6 +1521,48 @@
           [{ label: t("btn.speak"), onClick: () => speak(w.en) }],
           t("kbd.read")
         );
+      } else if (item.mode === "listen") {
+        // 听写：只放声音，不给中文和拼写
+        pill.className = "stage-pill listen";
+        pill.textContent = t("pill.listen");
+        document.getElementById("flowTip").textContent = t("learn.tipListen");
+        main.innerHTML = `
+          <button class="listen-play" id="btnListenPlay" type="button" aria-label="play">🔊</button>
+          <div class="prompt-meta">${t("listen.think")}</div>
+          <div class="hint-line" id="spellHint"></div>
+          <input id="answer" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${t("listen.placeholder")}" />
+        `;
+        document.getElementById("btnListenPlay").onclick = () => speak(w.en);
+        setTimeout(() => speak(w.en), 250);
+        const input = document.getElementById("answer");
+        setTimeout(() => input && input.focus(), 80);
+        setBar(
+          [{ label: t("btn.check"), onClick: checkSpell }],
+          [
+            {
+              label: t("btn.hint"),
+              onClick: () => {
+                // 听写提示：第一级先给中文，再逐级露字母
+                session.hintLevel = Math.min(4, session.hintLevel + 1);
+                document.getElementById("spellHint").textContent =
+                  session.hintLevel === 1
+                    ? (w.zh || "")
+                    : makeHint(w.en, session.hintLevel - 1);
+                input && input.focus();
+              }
+            },
+            { label: t("btn.speak"), onClick: () => speak(w.en) },
+            { label: t("btn.skip"), warn: true, onClick: () => skipSpell(item) }
+          ],
+          t("kbd.enter")
+        );
+        input.addEventListener("keydown", e => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (session.revealed) nextItem();
+            else checkSpell();
+          }
+        });
       } else {
         // spell
         pill.className = "stage-pill spell";
@@ -1470,10 +1607,11 @@
     function skipSpell(item) {
       if (!session.revealed) {
         const pr = getProg(item.word.en);
-        pr.spellWrong += 1;
+        if (item.mode === "listen") pr.listenWrong += 1; else pr.spellWrong += 1;
         pr.mastered = false;
         pr.last = Date.now();
         session.spellWrong += 1;
+        scheduleWord(item.word.en, false);
         requeueWrong(item);
         saveProgress();
       }
@@ -1502,6 +1640,8 @@
       if (know) {
         pr.readOk += 1;
         session.readOk += 1;
+        // 认读词的「认识」就是终点，推进复习间隔；普通词由拼写/听写推进
+        if (isRecogWord(w.en)) scheduleWord(w.en, true);
         fb.className = "feedback show ok";
         fb.innerHTML = `${t("fb.readOk")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
         speak(w.en);
@@ -1509,6 +1649,7 @@
         pr.readWrong += 1;
         pr.mastered = false;
         session.readWrong += 1;
+        scheduleWord(w.en, false);
         fb.className = "feedback show bad";
         fb.innerHTML = `${t("fb.readNo")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>`;
         speak(w.en);
@@ -1524,7 +1665,7 @@
 
     function checkSpell() {
       const item = current();
-      if (!item || item.mode !== "spell") return;
+      if (!item || (item.mode !== "spell" && item.mode !== "listen")) return;
       if (session.revealed) {
         nextItem();
         return;
@@ -1534,34 +1675,41 @@
       if (!input) return;
       const user = normKey(input.value);
       if (!user) return;
+      const isListen = item.mode === "listen";
       const answer = normKey(w.en);
       const pr = getProg(w.en);
       const fb = document.getElementById("learnFb");
       session.revealed = true;
       pr.last = Date.now();
+      // 听写模式判分后要把中文亮出来
+      const zhLine = isListen && w.zh ? `<div class="example">${escapeHtml(w.zh)}</div>` : "";
 
       if (user === answer) {
         input.className = "ok";
-        pr.spellOk += 1;
+        if (isListen) pr.listenOk += 1; else pr.spellOk += 1;
         session.spellOk += 1;
+        scheduleWord(w.en, true);
         recomputeMastered(w.en);
         fb.className = "feedback show ok";
         fb.innerHTML = `${t("fb.spellOk")}<div class="ans">${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+          ${zhLine}
           ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
           <div class="example" style="margin-top:6px">${t("fb.enter")}</div>`;
         speak(w.en);
       } else {
         input.className = "bad";
-        pr.spellWrong += 1;
+        if (isListen) pr.listenWrong += 1; else pr.spellWrong += 1;
         pr.mastered = false;
         session.spellWrong += 1;
+        scheduleWord(w.en, false);
         fb.className = "feedback show bad";
         fb.innerHTML = `${t("fb.spellBad")}<div class="ans">${t("fb.answer")}${escapeHtml(w.en)} ${escapeHtml(w.ipa || "")}</div>
+          ${zhLine}
           <div class="example">${t("fb.yours")}${escapeHtml(input.value)}</div>
           ${w.example ? `<div class="example">${escapeHtml(w.example)}</div>` : ""}
           <div class="example" style="margin-top:6px">${t("fb.requeued")}</div>`;
         requeueWrong(item);
-        // 拼错也加强认读
+        // 错词也加强认读
         if (Math.random() < 0.6) requeueWrong({ word: w, mode: "read" });
       }
       setBar(
@@ -1636,6 +1784,7 @@
           <div class="meters">
             <span class="meter ${p.readWrong ? "bad" : ""}">${t("bank.read", { a: p.readOk, b: p.readWrong })}</span>
             <span class="meter ${p.spellWrong ? "bad" : ""}">${t("bank.spell", { a: p.spellOk, b: p.spellWrong })}</span>
+            ${(p.listenOk || p.listenWrong) ? `<span class="meter ${p.listenWrong ? "bad" : ""}">${t("bank.listen", { a: p.listenOk, b: p.listenWrong })}</span>` : ""}
           </div>
         </div>`;
       }).join("") || `<div class="bank-item"><div class="zh">${t("bank.empty")}</div></div>`;
@@ -1742,8 +1891,9 @@
         "stat.total": "词库", "stat.new": "未认读", "stat.weak": "薄弱", "stat.mastered": "已掌握",
         "tab.learn": "🧠 学习", "tab.chapters": "📚 章节选择", "tab.weak": "📉 薄弱",
         "tab.bank": "📋 词库", "tab.settings": "⚙ 设置",
-        "filter.all": "全部", "filter.new": "未认读", "filter.core": "核心6词",
+        "filter.all": "全部", "filter.due": "今日复习", "filter.new": "未认读", "filter.core": "核心6词",
         "filter.star": "★重点", "filter.hard": "薄弱", "filter.mastered": "已掌握",
+        "home.due": "📅 今日待复习 {n} 词 · 点此开始",
         "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
         "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
         "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
@@ -1776,6 +1926,10 @@
         "pill.teach": "① 认读教学 · 先跟读",
         "pill.read": "② 认读自测 · 你认识吗？",
         "pill.spell": "③ 拼写练习 · 写出英文",
+        "pill.listen": "④ 听写挑战 · 听音拼词",
+        "learn.tipListen": "只听发音（英音），拼出这个词。点 🔊 可重听，提示先给中文再露字母。",
+        "listen.think": "🎧 听到了什么？",
+        "listen.placeholder": "输入你听到的单词…",
         "meta.star": "★重点", "meta.recog": "🏷️认读即可", "meta.stats": "拼错{a} 认错{b}",
         "btn.listen": "🔊 再听一遍", "btn.gotIt": "记住了，下一个",
         "btn.dontKnow": "不认识", "btn.know": "认识", "btn.speak": "🔊 读音", "btn.next": "继续",
@@ -1791,7 +1945,7 @@
         "weak.score": "权重 {x}",
         "weak.read": "认错 {a} / 认对 {b}", "weak.spell": "拼错 {a} / 拼对 {b}",
         "status.mastered": "已掌握", "status.learning": "学习中", "status.new": "未认读",
-        "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.empty": "暂无",
+        "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.listen": "听 {a}/{b}", "bank.empty": "暂无",
         "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度",
         "settings.themeLabel": "外观", "settings.themeHint": "昼·纸 / 夜·墨",
         "settings.light": "昼", "settings.dark": "夜",
@@ -1822,8 +1976,9 @@
         "stat.total": "Words", "stat.new": "Unseen", "stat.weak": "Weak", "stat.mastered": "Mastered",
         "tab.learn": "🧠 Learn", "tab.chapters": "📚 Chapters", "tab.weak": "📉 Weak",
         "tab.bank": "📋 Words", "tab.settings": "⚙ Settings",
-        "filter.all": "All", "filter.new": "Unseen", "filter.core": "Core 6",
+        "filter.all": "All", "filter.due": "Due today", "filter.new": "Unseen", "filter.core": "Core 6",
         "filter.star": "★ Key", "filter.hard": "Weak", "filter.mastered": "Mastered",
+        "home.due": "📅 {n} words due for review · tap to start",
         "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
         "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
         "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
@@ -1857,6 +2012,10 @@
         "pill.teach": "① Learn · listen and repeat",
         "pill.read": "② Recall · do you know it?",
         "pill.spell": "③ Spell · type the word",
+        "pill.listen": "④ Dictation · type what you hear",
+        "learn.tipListen": "Listen (British audio) and type the word. Tap 🔊 to replay; hints give meaning first, then letters.",
+        "listen.think": "🎧 What did you hear?",
+        "listen.placeholder": "Type what you heard…",
         "meta.star": "★ key", "meta.recog": "🏷️ recognition only", "meta.stats": "spell ✗{a} · read ✗{b}",
         "btn.listen": "🔊 Listen again", "btn.gotIt": "Got it, next",
         "btn.dontKnow": "Don’t know", "btn.know": "I know it",
@@ -1874,7 +2033,7 @@
         "weak.score": "priority {x}",
         "weak.read": "read ✗{a} / ✓{b}", "weak.spell": "spell ✗{a} / ✓{b}",
         "status.mastered": "Mastered", "status.learning": "Learning", "status.new": "Unseen",
-        "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.empty": "Empty",
+        "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.listen": "listen {a}/{b}", "bank.empty": "Empty",
         "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress",
         "settings.themeLabel": "Appearance", "settings.themeHint": "Paper by day / ink by night",
         "settings.light": "Day", "settings.dark": "Night",
