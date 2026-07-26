@@ -56,6 +56,7 @@ git push origin main
 - 逻辑几乎全在 `index.html` 内联脚本。  
 - 学习模式有四种：`teach` → `read` → `spell` / `listen`（听写，拼对过的词随机升级；`recog` 词只走 read）。  
 - 间隔重复：`scheduleWord(en, ok)`（SM-2 简化阶梯 1→3→×ease），`isDue()` 判到期；范围下拉有「今日复习」，首页有到期 banner。答题终点（spell/listen 判分、read 认错、recog 词 read 认对）都要调 `scheduleWord`。  
+- 打卡：`daily`（`ielts_vocab_daily_v1`，`{goal, days:{日期:{n,ok}}}`）；所有判分点都要调 `bumpDaily(ok)`；streak/目标显示在 hero 第二行，`updateDailyHud()` 刷新。  
 - 改完 **必须** 把 `sw.js` 的 `CACHE` 字符串版本号递增（如 `v2` → `v3`），否则手机可能一直离线旧页。  
 - 进度 schema 在 `getProg()`（含 `listenOk/listenWrong/ivl/ease/due`）；变更字段时要兼容旧 `localStorage`（照 migrate v1/v2 的写法加迁移）。  
 - 不要默认删除用户进度；「清空」只能是用户点击触发。

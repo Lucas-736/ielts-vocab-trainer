@@ -576,6 +576,8 @@
       transition: transform 0.12s ease;
     }
     .listen-play:active { transform: scale(0.93); }
+    /* 每日目标条：达标后换竹青色 */
+    .hero-bar i.daily.met { background: linear-gradient(90deg, #7fb28c, #b5d4bd); }
     .sel-wrap { position: relative; flex: 1 1 118px; min-width: 118px; }
     .sel-wrap::after {
       content: "▾";
@@ -792,6 +794,13 @@
         </div>
         <div class="hero-bar"><i id="heroBar"></i></div>
       </div>
+      <div class="hero-progress" style="margin-top:9px">
+        <div class="line">
+          <span id="dailyLabel">🔥</span>
+          <span id="dailyText">0/20</span>
+        </div>
+        <div class="hero-bar"><i id="dailyBar" class="daily"></i></div>
+      </div>
     </header>
 
     <div class="tabs">
@@ -860,6 +869,18 @@
           <div class="seg" id="segLang">
             <button data-lang-opt="zh">中文</button>
             <button data-lang-opt="en">English</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="label">
+            <span style="color:var(--text);font-size:0.88rem" data-i18n="settings.goalLabel">每日目标</span>
+            <span data-i18n="settings.goalHint">当天答题数达标即算打卡</span>
+          </div>
+          <div class="seg" id="segGoal">
+            <button data-goal-opt="10">10</button>
+            <button data-goal-opt="20">20</button>
+            <button data-goal-opt="30">30</button>
+            <button data-goal-opt="50">50</button>
           </div>
         </div>
       </div>
@@ -960,6 +981,61 @@
     function saveCustom(arr) { localStorage.setItem(CUSTOM_KEY, JSON.stringify(arr)); }
 
     let progress = loadProgress();
+
+    // —— 每日打卡：{ goal, days: { "2026-07-27": { n: 答题数, ok: 答对数 } } } ——
+    const DAILY_KEY = "ielts_vocab_daily_v1";
+    let daily = (() => {
+      try {
+        const d = JSON.parse(localStorage.getItem(DAILY_KEY) || "{}");
+        if (typeof d.goal !== "number") d.goal = 20;
+        if (!d.days || typeof d.days !== "object") d.days = {};
+        return d;
+      } catch { return { goal: 20, days: {} }; }
+    })();
+    function saveDaily() { localStorage.setItem(DAILY_KEY, JSON.stringify(daily)); }
+    function dayKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    /** 每次判分（认读/拼写/听写/跳过）都记一笔 */
+    function bumpDaily(ok) {
+      const k = dayKey(new Date());
+      const rec = daily.days[k] || (daily.days[k] = { n: 0, ok: 0 });
+      rec.n += 1;
+      if (ok) rec.ok += 1;
+      saveDaily();
+      updateDailyHud();
+    }
+    /** 连续达标天数；今天还没达标就从昨天起算 */
+    function streakCount() {
+      let s = 0;
+      const d = new Date();
+      const today = daily.days[dayKey(d)];
+      if (!(today && today.n >= daily.goal)) d.setDate(d.getDate() - 1);
+      for (;;) {
+        const rec = daily.days[dayKey(d)];
+        if (rec && rec.n >= daily.goal) { s += 1; d.setDate(d.getDate() - 1); }
+        else break;
+      }
+      return s;
+    }
+    function updateDailyHud() {
+      const rec = daily.days[dayKey(new Date())] || { n: 0, ok: 0 };
+      const met = rec.n >= daily.goal;
+      const label = document.getElementById("dailyLabel");
+      const text = document.getElementById("dailyText");
+      const bar = document.getElementById("dailyBar");
+      if (!label) return;
+      label.textContent = t("daily.streak", { n: streakCount() });
+      text.textContent = met
+        ? t("daily.done", { a: rec.n })
+        : t("daily.today", { a: rec.n, b: daily.goal });
+      bar.style.width = Math.min(100, (rec.n / daily.goal) * 100) + "%";
+      bar.classList.toggle("met", met);
+      // 设置页的目标选择高亮
+      document.querySelectorAll("#segGoal button").forEach(b =>
+        b.classList.toggle("on", Number(b.dataset.goalOpt) === daily.goal));
+    }
+
     let filter = "all";
     let weakOnly = false;
     /** 当前章节："all" 表示全部章节；否则是 dayN / other */
@@ -1612,6 +1688,7 @@
         pr.last = Date.now();
         session.spellWrong += 1;
         scheduleWord(item.word.en, false);
+        bumpDaily(false);
         requeueWrong(item);
         saveProgress();
       }
@@ -1658,6 +1735,7 @@
         requeueWrong({ word: w, mode: "read" });
       }
       recomputeMastered(w.en);
+      bumpDaily(know);
       saveProgress();
       updateSessionHud();
       updateStats();
@@ -1717,6 +1795,7 @@
         [{ label: t("btn.speak"), onClick: () => speak(w.en) }],
         t("kbd.enter")
       );
+      bumpDaily(user === answer);
       saveProgress();
       updateSessionHud();
       updateStats();
@@ -1894,6 +1973,10 @@
         "filter.all": "全部", "filter.due": "今日复习", "filter.new": "未认读", "filter.core": "核心6词",
         "filter.star": "★重点", "filter.hard": "薄弱", "filter.mastered": "已掌握",
         "home.due": "📅 今日待复习 {n} 词 · 点此开始",
+        "daily.streak": "🔥 连续打卡 {n} 天",
+        "daily.today": "今日 {a}/{b} 题",
+        "daily.done": "今日达标 ✅ 已练 {a} 题",
+        "settings.goalLabel": "每日目标", "settings.goalHint": "当天答题数达标即算打卡",
         "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
         "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
         "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
@@ -1979,6 +2062,10 @@
         "filter.all": "All", "filter.due": "Due today", "filter.new": "Unseen", "filter.core": "Core 6",
         "filter.star": "★ Key", "filter.hard": "Weak", "filter.mastered": "Mastered",
         "home.due": "📅 {n} words due for review · tap to start",
+        "daily.streak": "🔥 {n}-day streak",
+        "daily.today": "Today {a}/{b}",
+        "daily.done": "Goal met ✅ {a} answered today",
+        "settings.goalLabel": "Daily goal", "settings.goalHint": "Answer this many to keep your streak",
         "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
         "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
         "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
@@ -2111,6 +2198,7 @@
       renderBank();
       updateStats();
       updateCta();
+      updateDailyHud();
       if (studyOpen) {
         document.getElementById("studyChapter").textContent =
           chapterLabel(chapter) + " · " + t(SCOPES.find(x => x.id === filter).key);
@@ -2133,6 +2221,13 @@
     document.querySelectorAll("#segLang button").forEach(b => {
       b.onclick = () => applyLang(b.dataset.langOpt);
     });
+    document.querySelectorAll("#segGoal button").forEach(b => {
+      b.onclick = () => {
+        daily.goal = Number(b.dataset.goalOpt) || 20;
+        saveDaily();
+        updateDailyHud();
+      };
+    });
 
     // init
     applyTheme(theme);
@@ -2141,6 +2236,7 @@
     renderBank();
     updateStats();
     applyLang();
+    updateDailyHud();
     showPanel("home");
   </script>
 </body>
