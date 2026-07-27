@@ -4,6 +4,8 @@
  *       Day2-Should we cycle more?.md
  *       原始资料/6 Minute English：Rude emails · Stress-free family meals
  *         · Limiting screen time for children · How advertisers make us spend money
+ *       雅思最全词汇包/VocabForIELTS_WLM_FrequentlyMisspeltWords.pdf
+ *       雅思最全词汇包/雅思听力同义替换汇总.pdf
  *
  * 字段说明：
  *   en        英文（拼写答案，大小写不敏感）
@@ -34,7 +36,9 @@ window.VOCAB_CHAPTERS = {
   day11: "Day 11 · 阅读如何塑造大脑",
   day12: "Day 12 · 寻找外星生命",
   day13: "Day 13 · 我们为何如此焦虑",
-  day14: "Day 14 · 超加工食品该吃吗"
+  day14: "Day 14 · 超加工食品该吃吗",
+  day15: "Day 15 · 高频易错拼写",
+  day16: "Day 16 · 高频同义替换"
 };
 
 /** 英文界面下的章节标题（缺省回落到 "Day N"） */
@@ -52,7 +56,9 @@ window.VOCAB_CHAPTERS_EN = {
   day11: "Day 11 · How reading shapes your brain",
   day12: "Day 12 · Searching for life on another planet",
   day13: "Day 13 · Why are we all so stressed?",
-  day14: "Day 14 · Should we eat ultra-processed food?"
+  day14: "Day 14 · Should we eat ultra-processed food?",
+  day15: "Day 15 · Frequently misspelt words",
+  day16: "Day 16 · High-frequency paraphrases"
 };
 
 window.VOCAB_BANK = [
@@ -3273,6 +3279,410 @@ window.VOCAB_BANK = [
     example: "I'm just amazed how time flies!",
     exampleZh: "我只是感叹时间过得真快！",
     tags: ["day14", "recog", "phrase"],
+    star: true
+  },
+
+  // —— Day 15：Cambridge 高频易错拼写（首批 20 词） ——
+  {
+    en: "accommodation",
+    ipa: "/əˌkɒməˈdeɪʃn/",
+    pos: "n.",
+    zh: "住宿；住处",
+    example: "The university provides affordable accommodation for overseas students.",
+    exampleZh: "这所大学为海外学生提供价格合理的住宿。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "achievement",
+    ipa: "/əˈtʃiːvmənt/",
+    pos: "n.",
+    zh: "成就；成绩",
+    example: "Finishing the research project was a major achievement.",
+    exampleZh: "完成这个研究项目是一项重大成就。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "advertisement",
+    ipa: "/ədˈvɜːtɪsmənt/",
+    pos: "n.",
+    zh: "广告",
+    example: "The advertisement was designed to attract younger consumers.",
+    exampleZh: "这则广告旨在吸引更年轻的消费者。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "affect",
+    ipa: "/əˈfekt/",
+    pos: "v.",
+    zh: "影响",
+    example: "A lack of sleep can affect academic performance.",
+    exampleZh: "睡眠不足会影响学业表现。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "although",
+    ipa: "/ɔːlˈðəʊ/",
+    pos: "conj.",
+    zh: "尽管；虽然",
+    example: "Although the scheme is costly, it may bring long-term benefits.",
+    exampleZh: "尽管该方案成本高，但它可能带来长期收益。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "available",
+    ipa: "/əˈveɪləbl/",
+    pos: "adj.",
+    zh: "可获得的；可用的",
+    example: "Reliable public transport is not available in every rural area.",
+    exampleZh: "并非每个农村地区都有可靠的公共交通。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "beneficial",
+    ipa: "/ˌbenɪˈfɪʃl/",
+    pos: "adj.",
+    zh: "有益的",
+    example: "Regular exercise is beneficial to both physical and mental health.",
+    exampleZh: "经常锻炼对身心健康都有益。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "beginning",
+    ipa: "/bɪˈɡɪnɪŋ/",
+    pos: "n.",
+    zh: "开始；开端",
+    example: "The figures rose steadily at the beginning of the period.",
+    exampleZh: "在该时期开始时，数据稳步上升。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "believe",
+    ipa: "/bɪˈliːv/",
+    pos: "v.",
+    zh: "相信；认为",
+    example: "Many people believe that education should be free.",
+    exampleZh: "许多人认为教育应该免费。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "career",
+    ipa: "/kəˈrɪə/",
+    pos: "n.",
+    zh: "职业；事业",
+    example: "Young adults often change career paths more than once.",
+    exampleZh: "年轻人往往不止一次改变职业道路。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "colleague",
+    ipa: "/ˈkɒliːɡ/",
+    pos: "n.",
+    zh: "同事",
+    example: "She discussed the proposal with a colleague.",
+    exampleZh: "她和一位同事讨论了这份提案。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "committee",
+    ipa: "/kəˈmɪti/",
+    pos: "n.",
+    zh: "委员会",
+    example: "The committee will review the policy next month.",
+    exampleZh: "委员会将在下个月审查这项政策。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "comparison",
+    ipa: "/kəmˈpærɪsn/",
+    pos: "n.",
+    zh: "比较；对照",
+    example: "The chart allows a clear comparison between the two age groups.",
+    exampleZh: "该图表可以清楚比较两个年龄组。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "convenient",
+    ipa: "/kənˈviːniənt/",
+    pos: "adj.",
+    zh: "方便的；便利的",
+    example: "Online services are convenient for people who live far from cities.",
+    exampleZh: "在线服务对远离城市居住的人很方便。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "development",
+    ipa: "/dɪˈveləpmənt/",
+    pos: "n.",
+    zh: "发展；开发",
+    example: "Economic development can create new employment opportunities.",
+    exampleZh: "经济发展可以创造新的就业机会。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "difference",
+    ipa: "/ˈdɪfrəns/",
+    pos: "n.",
+    zh: "差异；不同",
+    example: "There was a significant difference between the two results.",
+    exampleZh: "两个结果之间存在显著差异。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "environment",
+    ipa: "/ɪnˈvaɪrənmənt/",
+    pos: "n.",
+    zh: "环境",
+    example: "Public transport can reduce pressure on the environment.",
+    exampleZh: "公共交通可以减轻环境压力。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "especially",
+    ipa: "/ɪˈspeʃəli/",
+    pos: "adv.",
+    zh: "尤其；特别",
+    example: "The problem is especially serious in large cities.",
+    exampleZh: "这个问题在大城市尤其严重。",
+    tags: ["day15", "ielts"],
+    star: false
+  },
+  {
+    en: "necessary",
+    ipa: "/ˈnesəsəri/",
+    pos: "adj.",
+    zh: "必要的",
+    example: "Government support may be necessary during the transition.",
+    exampleZh: "在转型期间，政府支持可能是必要的。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+  {
+    en: "opportunity",
+    ipa: "/ˌɒpəˈtjuːnəti/",
+    pos: "n.",
+    zh: "机会",
+    example: "Volunteering gives students an opportunity to gain practical experience.",
+    exampleZh: "志愿服务给学生提供了获得实践经验的机会。",
+    tags: ["day15", "ielts"],
+    star: true
+  },
+
+  // —— Day 16：听读写高频同义替换（首批 20 词/短语） ——
+  {
+    en: "address",
+    ipa: "/əˈdres/",
+    pos: "v.",
+    zh: "处理；应对（问题）",
+    example: "The new policy aims to address the shortage of affordable housing.",
+    exampleZh: "新政策旨在解决可负担住房短缺的问题。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "tackle",
+    ipa: "/ˈtækl/",
+    pos: "v.",
+    zh: "处理；应对（难题）",
+    example: "Cities must tackle air pollution more effectively.",
+    exampleZh: "城市必须更有效地应对空气污染。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "impair",
+    ipa: "/ɪmˈpeə/",
+    pos: "v.",
+    zh: "损害；削弱",
+    example: "Excessive noise can impair children's ability to concentrate.",
+    exampleZh: "过度噪音会损害儿童的专注能力。",
+    tags: ["day16", "ielts"],
+    star: false
+  },
+  {
+    en: "undermine",
+    ipa: "/ˌʌndəˈmaɪn/",
+    pos: "v.",
+    zh: "逐渐削弱；损害",
+    example: "Misinformation can undermine public trust.",
+    exampleZh: "虚假信息会削弱公众信任。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "foster",
+    ipa: "/ˈfɒstə/",
+    pos: "v.",
+    zh: "培养；促进",
+    example: "Group projects can foster cooperation among students.",
+    exampleZh: "小组项目可以促进学生之间的合作。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "drawback",
+    ipa: "/ˈdrɔːbæk/",
+    pos: "n.",
+    zh: "缺点；不利条件",
+    example: "The main drawback of remote work is social isolation.",
+    exampleZh: "远程工作的主要缺点是社交隔离。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "crucial",
+    ipa: "/ˈkruːʃl/",
+    pos: "adj.",
+    zh: "至关重要的",
+    example: "Parental support is crucial to a child's development.",
+    exampleZh: "父母的支持对儿童发展至关重要。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "significant",
+    ipa: "/sɪɡˈnɪfɪkənt/",
+    pos: "adj.",
+    zh: "显著的；重要的",
+    example: "There was a significant rise in the number of commuters.",
+    exampleZh: "通勤者人数显著上升。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "ensure",
+    ipa: "/ɪnˈʃʊə/",
+    pos: "v.",
+    zh: "确保",
+    example: "Clear rules help ensure the safety of all participants.",
+    exampleZh: "清晰的规则有助于确保所有参与者的安全。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "preserve",
+    ipa: "/prɪˈzɜːv/",
+    pos: "v.",
+    zh: "保护；保存",
+    example: "Local communities are working to preserve historic buildings.",
+    exampleZh: "当地社区正在努力保护历史建筑。",
+    tags: ["day16", "ielts"],
+    star: false
+  },
+  {
+    en: "detrimental",
+    ipa: "/ˌdetrɪˈmentl/",
+    pos: "adj.",
+    zh: "有害的；不利的",
+    example: "Long working hours can be detrimental to mental health.",
+    exampleZh: "长时间工作可能有害心理健康。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "eliminate",
+    ipa: "/ɪˈlɪmɪneɪt/",
+    pos: "v.",
+    zh: "消除；淘汰",
+    example: "The scheme is intended to eliminate unnecessary waste.",
+    exampleZh: "该计划旨在消除不必要的浪费。",
+    tags: ["day16", "ielts"],
+    star: false
+  },
+  {
+    en: "approximately",
+    ipa: "/əˈprɒksɪmətli/",
+    pos: "adv.",
+    zh: "大约",
+    example: "Approximately 40 percent of respondents chose public transport.",
+    exampleZh: "大约 40% 的受访者选择了公共交通。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "account for",
+    ipa: "/əˈkaʊnt fɔː/",
+    pos: "phr. v.",
+    zh: "占（比例）；解释",
+    example: "Online sales accounted for nearly half of the total.",
+    exampleZh: "线上销售占总量的近一半。",
+    tags: ["day16", "ielts", "phrase"],
+    star: true
+  },
+  {
+    en: "constitute",
+    ipa: "/ˈkɒnstɪtjuːt/",
+    pos: "v.",
+    zh: "构成；组成",
+    example: "People aged 18 to 25 constitute the largest group.",
+    exampleZh: "18 至 25 岁人群构成最大的群体。",
+    tags: ["day16", "ielts"],
+    star: false
+  },
+  {
+    en: "demonstrate",
+    ipa: "/ˈdemənstreɪt/",
+    pos: "v.",
+    zh: "表明；展示",
+    example: "The results demonstrate the importance of early intervention.",
+    exampleZh: "结果表明早期干预的重要性。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "remain stable",
+    ipa: "/rɪˌmeɪn ˈsteɪbl/",
+    pos: "短语",
+    zh: "保持稳定",
+    example: "The figure remained stable at around 30 percent.",
+    exampleZh: "该数值稳定在约 30%。",
+    tags: ["day16", "ielts", "phrase"],
+    star: true
+  },
+  {
+    en: "sharply",
+    ipa: "/ˈʃɑːpli/",
+    pos: "adv.",
+    zh: "急剧地；显著地",
+    example: "The unemployment rate fell sharply after 2015.",
+    exampleZh: "2015 年后失业率急剧下降。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "gradually",
+    ipa: "/ˈɡrædʒuəli/",
+    pos: "adv.",
+    zh: "逐渐地",
+    example: "The proportion increased gradually over the next decade.",
+    exampleZh: "在接下来的十年里，这一比例逐渐上升。",
+    tags: ["day16", "ielts"],
+    star: true
+  },
+  {
+    en: "result in",
+    ipa: "/rɪˈzʌlt ɪn/",
+    pos: "短语",
+    zh: "导致",
+    example: "Poor planning may result in higher costs.",
+    exampleZh: "规划不当可能导致更高的成本。",
+    tags: ["day16", "ielts", "phrase"],
     star: true
   }
 ];
