@@ -133,7 +133,11 @@ window.VOCAB_CHAPTERS = {
   day94: "Day 94 · 口语话题表达 9/12",
   day95: "Day 95 · 口语话题表达 10/12",
   day96: "Day 96 · 口语话题表达 11/12",
-  day97: "Day 97 · 口语话题表达 12/12"
+  day97: "Day 97 · 口语话题表达 12/12",
+  day98: "词包 98 · 阅读真题同义替换补充 1/4",
+  day99: "词包 99 · 阅读真题同义替换补充 2/4",
+  day100: "词包 100 · 阅读真题同义替换补充 3/4",
+  day101: "词包 101 · 阅读真题同义替换补充 4/4"
   // END AUTO CHAPTERS ZH
 };
 
@@ -236,8 +240,57 @@ window.VOCAB_CHAPTERS_EN = {
   day94: "Day 94 · Speaking topics 9/12",
   day95: "Day 95 · Speaking topics 10/12",
   day96: "Day 96 · Speaking topics 11/12",
-  day97: "Day 97 · Speaking topics 12/12"
+  day97: "Day 97 · Speaking topics 12/12",
+  day98: "Pack 98 · Reading paraphrases 1/4",
+  day99: "Pack 99 · Reading paraphrases 2/4",
+  day100: "Pack 100 · Reading paraphrases 3/4",
+  day101: "Pack 101 · Reading paraphrases 4/4"
   // END AUTO CHAPTERS EN
+};
+
+/** 资料来源名称与词包默认元数据。旧 dayN ID 保留，仅用于兼容历史进度。 */
+window.VOCAB_SOURCE_CATALOG = {
+  "restart-materials": { zh: "重启听读材料", en: "Restart materials" },
+  "frequently-misspelt": { zh: "Cambridge高频易错拼写", en: "Frequently misspelt words" },
+  "listening-paraphrase": { zh: "雅思听力同义替换", en: "Listening paraphrases" },
+  "awl-570": { zh: "AWL 570+学术核心词", en: "AWL academic core" },
+  "reading-10-lists": { zh: "10 Lists阅读必备词", en: "10 Lists reading vocabulary" },
+  "listening-scenarios": { zh: "雅思听力场景类词汇", en: "Listening scenarios" },
+  "writing-topic": { zh: "写作话题词汇", en: "Writing topics" },
+  "speaking-topic": { zh: "口语话题词汇", en: "Speaking topics" },
+  "reading-question-paraphrase": { zh: "阅读题干vs答案同义替换", en: "Reading question paraphrases" }
+};
+
+window.VOCAB_METADATA_FOR_PACK = function (packId) {
+  const n = Number(String(packId || "").replace(/^day/i, ""));
+  if (!Number.isFinite(n)) {
+    return { sourceIds: ["custom"], tier: "recognition", skills: ["general"], topic: "自定义" };
+  }
+  if (n <= 14) {
+    return { sourceIds: ["restart-materials"], tier: "active", skills: ["listening", "reading"], topic: "重启材料" };
+  }
+  if (n === 15 || n === 44 || n === 45) {
+    return { sourceIds: ["frequently-misspelt"], tier: "active", skills: ["listening", "writing"], topic: "易错拼写" };
+  }
+  if (n === 16) {
+    return { sourceIds: ["listening-paraphrase"], tier: "active", skills: ["listening", "reading"], topic: "同义替换" };
+  }
+  if (n >= 17 && n <= 43) {
+    return { sourceIds: ["awl-570", "reading-10-lists"], tier: "recognition", skills: ["reading", "writing"], topic: "学术核心" };
+  }
+  if (n >= 46 && n <= 70) {
+    return { sourceIds: ["listening-scenarios"], tier: "recognition", skills: ["listening"], topic: "听力场景" };
+  }
+  if (n >= 71 && n <= 85) {
+    return { sourceIds: ["writing-topic"], tier: "recognition", skills: ["writing"], topic: "写作话题" };
+  }
+  if (n >= 86 && n <= 97) {
+    return { sourceIds: ["speaking-topic"], tier: "recognition", skills: ["speaking"], topic: "口语话题" };
+  }
+  if (n >= 98 && n <= 101) {
+    return { sourceIds: ["reading-question-paraphrase"], tier: "recognition", skills: ["reading"], topic: "阅读同义替换" };
+  }
+  return { sourceIds: ["custom"], tier: "recognition", skills: ["general"], topic: "其他" };
 };
 
 window.VOCAB_BANK = [
@@ -14867,3 +14920,101 @@ window.VOCAB_BANK = [
   }
   // END AUTO WORD ENTRIES
 ];
+
+/**
+ * 2026-07-31 扩容：从《雅思阅读真题题干vs答案同义词替换》筛选，
+ * 与原 1,935 条标准化去重后新增 74 条。默认识别扩展，真题命中时可在App一键升级。
+ */
+window.VOCAB_SUPPLEMENT_20260731 = [
+  ["adjunct", "n.", "附加物", "addition"],
+  ["adorn", "v.", "装饰", "decorate"],
+  ["adversely", "adv.", "不利地；有害地", "negatively"],
+  ["aesthetically", "adv.", "审美地；美学地", "artistically"],
+  ["annihilate", "v.", "消灭；彻底摧毁", "conquer"],
+  ["antagonist", "n.", "对手；敌手", "enemy"],
+  ["antecedent", "n.", "先例；先辈；前件", "predecessor"],
+  ["arduous", "adj.", "艰巨的；费力的", "difficult"],
+  ["assortment", "n.", "各种各样；混合品", "variety"],
+  ["attire", "n.", "衣着；服装", "clothing"],
+  ["avid", "adj.", "渴望的；热衷的", "eager"],
+  ["brittle", "adj.", "易碎的；脆的", "easily broken"],
+  ["celestial", "adj.", "天空的；天体的", "astronomical"],
+  ["chronicle", "v.", "记述；按时间记录", "describe"],
+  ["coarse", "adj.", "粗糙的；粗劣的", "rough"],
+  ["conclusive", "adj.", "决定性的；结论性的", "definitive"],
+  ["conspicuous", "adj.", "显著的；显眼的", "noticeable"],
+  ["constituent", "n.", "成分；构成要素", "component"],
+  ["convergence", "n.", "汇聚；趋同", "gathering"],
+  ["counteract", "v.", "抵消；对抗", "negate"],
+  ["counterpart", "n.", "对应的人或物", "version"],
+  ["crisscross", "v.", "交叉往来；纵横交错", "move back and forth"],
+  ["connoisseur", "n.", "鉴赏家；行家", "critical judge"],
+  ["cumbersome", "adj.", "笨重的；麻烦的", "burdensome"],
+  ["deft", "adj.", "熟练的；灵巧的", "skilled"],
+  ["demise", "n.", "死亡；终止", "death"],
+  ["detectable", "adj.", "可察觉的", "apparent"],
+  ["devastated", "adj.", "被严重破坏的", "ruined"],
+  ["devote to", "v.", "致力于；献身于", "dedicate"],
+  ["diffuse", "v.", "扩散；传播", "spread"],
+  ["discard", "v.", "丢弃；抛弃", "get rid of"],
+  ["disseminate", "v.", "散布；传播", "spread"],
+  ["divergence", "n.", "分歧；差异", "difference"],
+  ["dividing line", "n.", "分界线", "boundary"],
+  ["durability", "n.", "耐久性", "endurance"],
+  ["elevate", "v.", "提高；提升", "promote"],
+  ["elicit", "v.", "引出；诱出", "bring out"],
+  ["emit", "v.", "发出；排放", "give off"],
+  ["encompass", "v.", "包含；涵盖", "include"],
+  ["entomb", "v.", "埋葬；封入", "trap"],
+  ["eradicate", "v.", "根除；消灭", "eliminate"],
+  ["misconception", "n.", "误解；错误观念", "erroneous idea"],
+  ["erroneously", "adv.", "错误地", "mistakenly"],
+  ["exalted", "adj.", "崇高的；高贵的", "superior"],
+  ["exert", "v.", "施加；运用", "cause"],
+  ["exorbitant", "adj.", "过高的；昂贵得离谱的", "expensive"],
+  ["expendable", "adj.", "可牺牲的；可消耗的", "dispensable"],
+  ["extol", "v.", "赞美；颂扬", "praise"],
+  ["fabricate", "v.", "制造；编造", "make"],
+  ["faction", "n.", "派系；小集团", "side"],
+  ["fatal", "adj.", "致命的", "deadly"],
+  ["flattering", "adj.", "奉承的；讨好的", "complimentary"],
+  ["flourish", "v.", "繁荣；茁壮成长", "thrive"],
+  ["formidable", "adj.", "艰巨的；令人敬畏的", "difficult"],
+  ["forward-looking", "adj.", "有远见的；前瞻的", "progressive"],
+  ["functional", "adj.", "实用的；功能正常的", "usable"],
+  ["graphic", "adj.", "生动的；图示的", "vivid"],
+  ["herald", "v.", "预示；宣布", "announce"],
+  ["immutable", "adj.", "不可改变的", "unchangeable"],
+  ["impediment", "n.", "妨碍；阻碍", "obstacle"],
+  ["imperceptibly", "adv.", "难以察觉地", "subtly"],
+  ["inception", "n.", "开端；起初", "beginning"],
+  ["incinerate", "v.", "焚烧；烧毁", "burn up"],
+  ["incised", "adj.", "雕刻的；切入的", "carved"],
+  ["inclination", "n.", "倾向；偏好", "preference"],
+  ["insignificant", "adj.", "不重要的；微小的", "unimportant"],
+  ["iterate", "v.", "重复；反复说明", "repeat"],
+  ["portable", "adj.", "便携的；轻便的", "easily moved"],
+  ["prevalent", "adj.", "普遍的；流行的", "widespread"],
+  ["rudimentary", "adj.", "基础的；初步的", "basic"],
+  ["subtly", "adv.", "微妙地；不明显地", "imperceptibly"],
+  ["unreachable", "adj.", "无法到达的", "inaccessible"],
+  ["uphold", "v.", "维护；支持；确认", "confirm"],
+  ["weigh", "v.", "权衡；有分量", "count"]
+].map(function (row, index) {
+  const pack = "day" + (98 + Math.floor(index / 20));
+  return {
+    en: row[0],
+    ipa: "",
+    pos: row[1],
+    zh: row[2],
+    example: "Reading paraphrase: " + row[0] + " ≈ " + row[3] + ".",
+    tags: [pack, "ielts", "reading", "paraphrase"],
+    star: false,
+    sourceIds: ["reading-question-paraphrase"],
+    tier: "recognition",
+    skills: ["reading"],
+    topic: "阅读同义替换"
+  };
+});
+
+window.VOCAB_BANK.push.apply(window.VOCAB_BANK, window.VOCAB_SUPPLEMENT_20260731);

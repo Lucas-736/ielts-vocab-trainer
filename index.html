@@ -483,6 +483,16 @@
     }
     .meter.bad { color: var(--bad); }
     .meter.ok { color: var(--good); }
+    .tier-btn {
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--accent);
+      border-radius: 99px;
+      padding: 2px 9px;
+      font-size: 0.71rem;
+      cursor: pointer;
+    }
+    .tier-btn:hover { border-color: var(--accent); }
 
     /* —— 设置 —— */
     textarea#importBox {
@@ -887,6 +897,16 @@
         </div>
         <button class="scope-icon" id="btnShuffle" type="button" title="打乱顺序">🔀</button>
       </div>
+      <div class="scopebar">
+        <div class="sel-wrap">
+          <span class="cap" data-i18n="scope.sourceCap">来源</span>
+          <select class="sel" id="selSource"></select>
+        </div>
+        <div class="sel-wrap">
+          <span class="cap" data-i18n="scope.skillCap">技能</span>
+          <select class="sel" id="selSkill"></select>
+        </div>
+      </div>
 
       <button class="due-banner" id="dueBanner" type="button" style="display:none"></button>
 
@@ -909,6 +929,7 @@
       <div class="actions" style="margin-top:12px">
         <button class="btn ghost" id="btnExport" data-i18n="bank.exportBank">导出词库 JSON</button>
         <button class="btn ghost" id="btnExportProgress" data-i18n="bank.exportProgress">导出进度</button>
+        <button class="btn primary" id="btnCopyWeekly" data-i18n="bank.copyWeekly">复制周报</button>
       </div>
     </section>
 
@@ -1317,10 +1338,15 @@
       else if (syncCfg.lastSync) setSyncStatus("ok");
     }
 
-    let filter = "all";
+    const deepLink = new URLSearchParams(window.location.search);
+    const tierParam = deepLink.get("tier");
+    let filter = deepLink.get("filter") || tierParam || "all";
+    let tierFilter = deepLink.get("filter") && tierParam ? tierParam : "all";
     let weakOnly = false;
+    let sourceFilter = deepLink.get("source") || "all";
+    let skillFilter = deepLink.get("skill") || "all";
     /** 当前章节："all" 表示全部章节；否则是 dayN / other */
-    let chapter = localStorage.getItem(CHAPTER_KEY) || "all";
+    let chapter = deepLink.get("chapter") || localStorage.getItem(CHAPTER_KEY) || "all";
     /** 打乱模式：忽略薄弱权重，纯随机出词 */
     let shuffleMode = false;
 
@@ -1328,13 +1354,47 @@
       return String(s).trim().toLowerCase().replace(/\s+/g, " ");
     }
 
+    function enrichWord(w, isCustom) {
+      const packId = chapterOf(w);
+      const meta = typeof window.VOCAB_METADATA_FOR_PACK === "function"
+        ? window.VOCAB_METADATA_FOR_PACK(packId)
+        : {};
+      const tags = Array.isArray(w.tags) ? w.tags : [];
+      const sourceIds = [...new Set([...(meta.sourceIds || []), ...(w.sourceIds || [])])];
+      const skills = [...new Set([...(meta.skills || []), ...(w.skills || [])])];
+      let tier = w.tier || meta.tier || (isCustom ? "recognition" : "active");
+      if (!w.tier && (w.star || tags.includes("core"))) tier = "active";
+      return {
+        ...w,
+        tags,
+        sourceIds: sourceIds.length ? sourceIds : ["custom"],
+        tier,
+        skills: skills.length ? skills : ["general"],
+        topic: w.topic || meta.topic || (isCustom ? t("source.custom") : "")
+      };
+    }
+
     function allWords() {
       const base = Array.isArray(window.VOCAB_BANK) ? window.VOCAB_BANK : [];
       const custom = loadCustom();
       const map = new Map();
-      [...base, ...custom].forEach(w => {
+      [...base.map(w => [w, false]), ...custom.map(w => [w, true])].forEach(([w, isCustom]) => {
         if (!w || !w.en) return;
-        map.set(normKey(w.en), { ...w, en: w.en.trim() });
+        const next = enrichWord({ ...w, en: w.en.trim() }, isCustom);
+        const key = normKey(next.en);
+        const prev = map.get(key);
+        if (!prev) {
+          map.set(key, next);
+          return;
+        }
+        map.set(key, {
+          ...prev,
+          ...next,
+          tier: isCustom && !w.tier ? prev.tier : next.tier,
+          sourceIds: [...new Set([...(prev.sourceIds || []), ...(next.sourceIds || [])])],
+          skills: [...new Set([...(prev.skills || []), ...(next.skills || [])])],
+          tags: [...new Set([...(prev.tags || []), ...(next.tags || [])])]
+        });
       });
       return [...map.values()];
     }
@@ -1351,7 +1411,11 @@
       const titles = (lang === "en" && window.VOCAB_CHAPTERS_EN)
         ? window.VOCAB_CHAPTERS_EN
         : (window.VOCAB_CHAPTERS || {});
-      if (titles[id]) return titles[id];
+      if (titles[id]) {
+        return lang === "en"
+          ? titles[id].replace(/^Day\s+/i, "Pack ")
+          : titles[id].replace(/^Day\s+/i, "词包 ");
+      }
       return t("ch.day", { n: id.replace(/^day/i, "") });
     }
     /** 章节列表（按 dayN 数字排序，other 垫底） */
@@ -1406,6 +1470,11 @@
         p.ease = p.ease ?? 2.5;
         p.due = p.due ?? null;
       }
+      // migrate v3：分层覆盖允许逐词覆盖；旧进度原样保留
+      if (p.tierOverride === undefined) p.tierOverride = null;
+      if (p.promotedAt === undefined) p.promotedAt = null;
+      if (p.scheduledOnce === undefined) p.scheduledOnce = !!p.introduced;
+      if (p.dueCompletedOn === undefined) p.dueCompletedOn = null;
       return p;
     }
 
@@ -1422,7 +1491,11 @@
         last: null,
         ivl: 0,      // 间隔（天）
         ease: 2.5,   // 难度系数
-        due: null    // 下次复习时间戳；null=尚未排程（视为到期）
+        due: null,   // 下次复习时间戳；null=尚未排程（视为到期）
+        tierOverride: null,
+        promotedAt: null,
+        scheduledOnce: false,
+        dueCompletedOn: null
       };
     }
 
@@ -1436,6 +1509,7 @@
     /** 拼写/听写/认读定级后调用：答对沿 1→3→ivl×ease 阶梯延后，答错回到明天 */
     function scheduleWord(en, ok) {
       const p = getProg(en);
+      const wasDue = isDue(en);
       if (ok) {
         if (p.ivl <= 0) p.ivl = 1;
         else if (p.ivl === 1) p.ivl = 3;
@@ -1447,11 +1521,13 @@
         p.ivl = 0;
       }
       p.due = Date.now() + Math.max(1, p.ivl) * DAY_MS;
+      p.scheduledOnce = true;
+      if (wasDue) p.dueCompletedOn = dayKey(new Date());
     }
     /** 已学过且复习时间到（含从未排程的旧进度） */
     function isDue(en) {
       const p = getProg(en);
-      return p.introduced && (p.due == null || p.due <= endOfToday());
+      return p.introduced && p.scheduledOnce && (p.due == null || p.due <= endOfToday());
     }
 
     /** 越高越优先练 */
@@ -1474,10 +1550,29 @@
       return s;
     }
 
-    /** 认读词（recog 标签，如地名）：会认即可，不进拼写关 */
+    function wordByEnglish(en) {
+      return allWords().find(x => normKey(x.en) === normKey(en));
+    }
+
+    function tierOf(wordOrEnglish) {
+      const w = typeof wordOrEnglish === "string" ? wordByEnglish(wordOrEnglish) : wordOrEnglish;
+      if (!w) return "active";
+      return getProg(w.en).tierOverride || w.tier || "active";
+    }
+
+    function promoteToActive(en) {
+      const p = getProg(en);
+      p.tierOverride = "active";
+      p.promotedAt = new Date().toISOString();
+      p.last = Date.now();
+      recomputeMastered(en);
+      saveProgress();
+      refreshAll();
+    }
+
+    /** 识别扩展词：快速识义/听辨即可，不进拼写关 */
     function isRecogWord(en) {
-      const w = allWords().find(x => normKey(x.en) === normKey(en));
-      return !!(w && (w.tags || []).includes("recog"));
+      return tierOf(en) === "recognition";
     }
 
     function isWeak(en) {
@@ -1506,6 +1601,13 @@
     function filteredWords() {
       let list = allWords();
       if (chapter !== "all") list = list.filter(w => chapterOf(w) === chapter);
+      if (sourceFilter !== "all") list = list.filter(w => (w.sourceIds || []).includes(sourceFilter));
+      if (skillFilter !== "all") list = list.filter(w => (w.skills || []).includes(skillFilter));
+      if (tierFilter === "active" || tierFilter === "recognition") {
+        list = list.filter(w => tierOf(w) === tierFilter);
+      }
+      if (filter === "active") list = list.filter(w => tierOf(w) === "active");
+      if (filter === "recognition") list = list.filter(w => tierOf(w) === "recognition");
       if (filter === "due") list = list.filter(w => isDue(w.en));
       if (filter === "star") list = list.filter(w => w.star);
       if (filter === "core") list = list.filter(w => (w.tags || []).includes("core"));
@@ -1521,13 +1623,22 @@
       const all = chapter === "all"
         ? allWords()
         : allWords().filter(w => chapterOf(w) === chapter);
-      const nMastered = all.filter(w => getProg(w.en).mastered).length;
+      const nIntroduced = all.filter(w => getProg(w.en).introduced).length;
+      const active = all.filter(w => tierOf(w) === "active");
+      const recognition = all.filter(w => tierOf(w) === "recognition");
+      const activeMastered = active.filter(w => getProg(w.en).mastered).length;
+      const recognitionMastered = recognition.filter(w => getProg(w.en).mastered).length;
       // 各范围的词数改在「范围」下拉里显示，这里只管 hero 进度
 
       // Hero 掌握进度
-      const pct = all.length ? Math.round((nMastered / all.length) * 100) : 0;
+      const pct = all.length ? Math.round((nIntroduced / all.length) * 100) : 0;
       document.getElementById("heroBar").style.width = pct + "%";
-      document.getElementById("heroPct").textContent = `${nMastered}/${all.length} · ${pct}%`;
+      document.getElementById("heroPct").textContent =
+        t("hero.stats", {
+          a: nIntroduced, b: all.length,
+          c: activeMastered, d: active.length,
+          e: recognitionMastered, f: recognition.length
+        });
       document.getElementById("heroLabel").textContent =
         t("hero.progress", { x: chapterLabel(chapter) });
     }
@@ -1536,6 +1647,8 @@
     // —— 选什么词：章节 × 范围 ——
     const SCOPES = [
       { id: "all", key: "filter.all" },
+      { id: "active", key: "filter.active" },
+      { id: "recognition", key: "filter.recognition" },
       { id: "due", key: "filter.due" },
       { id: "new", key: "filter.new" },
       { id: "hard", key: "filter.hard" },
@@ -1548,6 +1661,7 @@
     function renderScopeBar() {
       const rows = chapterStats();
       if (chapter !== "all" && !rows.some(c => c.id === chapter)) setChapter("all");
+      if (!SCOPES.some(x => x.id === filter)) filter = "all";
 
       const selCh = document.getElementById("selChapter");
       const all = allWords();
@@ -1561,6 +1675,28 @@
       selSc.innerHTML = SCOPES.map(sc =>
         `<option value="${sc.id}"${filter === sc.id ? " selected" : ""}>` +
         `${escapeHtml(t(sc.key))} · ${countInScope(sc.id)}</option>`).join("");
+
+      const sourceIds = [...new Set(all.flatMap(w => w.sourceIds || []))].sort();
+      if (sourceFilter !== "all" && !sourceIds.includes(sourceFilter)) sourceFilter = "all";
+      const selSource = document.getElementById("selSource");
+      selSource.innerHTML = [
+        `<option value="all">${escapeHtml(t("source.all"))} · ${all.length}</option>`,
+        ...sourceIds.map(id => {
+          const source = window.VOCAB_SOURCE_CATALOG && window.VOCAB_SOURCE_CATALOG[id];
+          const label = source ? (lang === "en" ? source.en : source.zh) : id;
+          const n = all.filter(w => (w.sourceIds || []).includes(id)).length;
+          return `<option value="${escapeHtml(id)}"${id === sourceFilter ? " selected" : ""}>${escapeHtml(label)} · ${n}</option>`;
+        })
+      ].join("");
+
+      const skills = ["listening", "reading", "writing", "speaking", "general"];
+      if (skillFilter !== "all" && !skills.includes(skillFilter)) skillFilter = "all";
+      const selSkill = document.getElementById("selSkill");
+      selSkill.innerHTML = [
+        `<option value="all">${escapeHtml(t("skill.all"))}</option>`,
+        ...skills.map(id =>
+          `<option value="${id}"${id === skillFilter ? " selected" : ""}>${escapeHtml(t("skill." + id))}</option>`)
+      ].join("");
 
       document.getElementById("btnShuffle").classList.toggle("on", shuffleMode);
     }
@@ -1580,7 +1716,17 @@
     };
     document.getElementById("selScope").onchange = (e) => {
       filter = e.target.value;
+      // 用户手动改范围后，以界面选择为准，解除URL组合深链的隐藏tier约束
+      tierFilter = "all";
       weakOnly = filter === "hard";
+      refreshAll();
+    };
+    document.getElementById("selSource").onchange = (e) => {
+      sourceFilter = e.target.value;
+      refreshAll();
+    };
+    document.getElementById("selSkill").onchange = (e) => {
+      skillFilter = e.target.value;
       refreshAll();
     };
     document.getElementById("btnShuffle").onclick = () => {
@@ -2284,9 +2430,13 @@
       const list = [...filteredWords()].sort((a, b) => weakScore(b.en) - weakScore(a.en));
       const el = document.getElementById("bankList");
       const showScore = filter === "hard";
-      el.innerHTML = list.map(w => {
+      el.innerHTML = list.map((w, index) => {
         const p = getProg(w.en);
         const cls = p.mastered ? "mastered" : (isWeak(w.en) ? "weak" : "");
+        const tier = tierOf(w);
+        const sourceId = (w.sourceIds || [])[0];
+        const source = window.VOCAB_SOURCE_CATALOG && window.VOCAB_SOURCE_CATALOG[sourceId];
+        const sourceLabel = source ? (lang === "en" ? source.en : source.zh) : (sourceId || t("source.custom"));
         return `<div class="bank-item ${cls}">
           <div class="en">${escapeHtml(w.en)} <span style="color:var(--gold);font-weight:400;font-size:0.85rem">${escapeHtml(w.ipa || "")}</span></div>
           <div class="tag">${showScore
@@ -2294,13 +2444,78 @@
             : (p.mastered ? t("status.mastered") : (p.introduced ? t("status.learning") : t("status.new")))}</div>
           <div class="zh">${escapeHtml(w.pos || "")} · ${escapeHtml(w.zh || "")}</div>
           <div class="meters">
+            <span class="meter">${escapeHtml(t("meta." + tier))}</span>
+            <span class="meter">${escapeHtml(sourceLabel)}</span>
+            ${tier === "recognition"
+              ? `<button class="tier-btn" data-word-index="${index}">${escapeHtml(t("btn.promote"))}</button>`
+              : ""}
+          </div>
+          <div class="meters">
             <span class="meter ${p.readWrong ? "bad" : ""}">${t("bank.read", { a: p.readOk, b: p.readWrong })}</span>
             <span class="meter ${p.spellWrong ? "bad" : ""}">${t("bank.spell", { a: p.spellOk, b: p.spellWrong })}</span>
             ${(p.listenOk || p.listenWrong) ? `<span class="meter ${p.listenWrong ? "bad" : ""}">${t("bank.listen", { a: p.listenOk, b: p.listenWrong })}</span>` : ""}
           </div>
         </div>`;
       }).join("") || `<div class="bank-item"><div class="zh">${t("bank.empty")}</div></div>`;
+      el.querySelectorAll(".tier-btn").forEach(btn => {
+        btn.onclick = () => {
+          const word = list[Number(btn.dataset.wordIndex)];
+          if (word) promoteToActive(word.en);
+        };
+      });
     }
+
+    function vocabStats() {
+      const all = allWords();
+      const active = all.filter(w => tierOf(w) === "active");
+      const recognition = all.filter(w => tierOf(w) === "recognition");
+      const introduced = all.filter(w => getProg(w.en).introduced).length;
+      const activeMastered = active.filter(w => getProg(w.en).mastered).length;
+      const recognitionMastered = recognition.filter(w => getProg(w.en).mastered).length;
+      const weak = all.filter(w => isWeak(w.en)).length;
+      const due = all.filter(w => isDue(w.en));
+      const dueDone = all.filter(w => getProg(w.en).dueCompletedOn === dayKey(new Date())).length;
+      return {
+        total: all.length,
+        introduced,
+        activeTotal: active.length,
+        activeMastered,
+        recognitionTotal: recognition.length,
+        recognitionMastered,
+        weak,
+        dueTotal: due.length + dueDone,
+        dueDone
+      };
+    }
+
+    function weeklyReportText() {
+      const s = vocabStats();
+      return t("report.line", {
+        a: s.introduced, b: s.total,
+        c: s.activeMastered, d: s.activeTotal,
+        e: s.recognitionMastered, f: s.recognitionTotal,
+        g: s.weak, h: s.dueDone, i: s.dueTotal
+      });
+    }
+
+    document.getElementById("btnCopyWeekly").onclick = async () => {
+      const value = `vocab_report: "${weeklyReportText().replace(/"/g, '\\"')}"`;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          const box = document.createElement("textarea");
+          box.value = value;
+          document.body.appendChild(box);
+          box.select();
+          if (!document.execCommand("copy")) throw new Error("copy failed");
+          box.remove();
+        }
+        alert(t("alert.weeklyCopied"));
+      } catch {
+        alert(t("alert.weeklyCopyFail") + "\n" + value);
+      }
+    };
 
     document.getElementById("btnExport").onclick = () => {
       downloadJson(allWords(), "vocab-bank.json");
@@ -2403,7 +2618,8 @@
         "stat.total": "词库", "stat.new": "未认读", "stat.weak": "薄弱", "stat.mastered": "已掌握",
         "tab.learn": "🧠 学习", "tab.chapters": "📚 章节选择", "tab.weak": "📉 薄弱",
         "tab.bank": "📋 词库", "tab.settings": "⚙ 设置",
-        "filter.all": "全部", "filter.due": "今日复习", "filter.new": "未认读", "filter.core": "核心6词",
+        "filter.all": "全部", "filter.active": "主动核心", "filter.recognition": "识别扩展",
+        "filter.due": "今日复习", "filter.new": "未认读", "filter.core": "原重点词",
         "filter.star": "★重点", "filter.hard": "薄弱", "filter.mastered": "已掌握",
         "home.due": "📅 今日待复习 {n} 词 · 点此开始",
         "daily.streak": "🔥 连续打卡 {n} 天",
@@ -2432,10 +2648,11 @@
         "sync.statusFail": "⚠️ 同步失败（{m}）。检查网络或 token 是否有效。",
         "sync.confirmOff": "关闭后本机不再自动同步（云端和其他设备的数据保留）。确定？",
         "sync.fail": "同步失败：",
-        "ch.all": "全部章节", "ch.other": "其他 / 自定义词", "ch.day": "Day {n}",
+        "ch.all": "全部词包", "ch.other": "其他 / 自定义词", "ch.day": "词包 {n}",
         "ch.words": "{n} 词", "ch.fresh": "未认读 {n}", "ch.mastered": "已掌握 {n}",
         "badge.current": "当前章节：{x}", "badge.shuffle": " · 🔀 打乱",
-        "hero.progress": "{x} · 掌握进度",
+        "hero.progress": "{x} · 分层进度",
+        "hero.stats": "覆盖 {a}/{b} · 核心 {c}/{d} · 识别 {e}/{f}",
         "chapters.tip": "你可以选择具体章节复习，也可以打乱所有章节随机刷词。",
         "chapters.shuffle": "🔀 打乱章节", "chapters.all": "复习全部",
         "sess.progress": "本轮进度 {a}/{b}", "sess.empty": "本轮无题目",
@@ -2447,7 +2664,11 @@
         "learn.tipDone": "本轮完成！可再点「开始一轮」，系统会更偏向你的错词。",
         "learn.tipNone": "当前筛选下没有词。换「全部」或「未认读」试试。",
         "learn.emptyTitle": "本轮没有词了", "learn.emptyBody": "换个章节或范围，再点「再来一轮」",
-        "scope.chapterCap": "章节", "scope.rangeCap": "范围",
+        "scope.chapterCap": "词包", "scope.rangeCap": "范围",
+        "scope.sourceCap": "来源", "scope.skillCap": "技能",
+        "source.all": "全部来源", "source.custom": "自定义",
+        "skill.all": "全部技能", "skill.listening": "听力", "skill.reading": "阅读",
+        "skill.writing": "写作", "skill.speaking": "口语", "skill.general": "综合",
         "tab.home": "🏠 首页",
         "home.start": "开始学习",
         "home.startSub": "本轮 {n} 词 · {scope}",
@@ -2473,9 +2694,10 @@
         "listen.think": "🎧 听到了什么？",
         "listen.placeholder": "输入你听到的单词…",
         "meta.star": "★重点", "meta.recog": "🏷️认读即可", "meta.stats": "拼错{a} 认错{b}",
+        "meta.active": "主动核心", "meta.recognition": "识别扩展",
         "btn.listen": "🔊 再听一遍", "btn.gotIt": "记住了，下一个",
         "btn.dontKnow": "不认识", "btn.know": "认识", "btn.speak": "🔊 读音", "btn.next": "继续",
-        "btn.check": "检查 ↩", "btn.hint": "提示", "btn.skip": "跳过",
+        "btn.check": "检查 ↩", "btn.hint": "提示", "btn.skip": "跳过", "btn.promote": "升级为主动核心",
         "read.think": "想一想英文是什么，再作答",
         "spell.placeholder": "输入英文拼写…", "spell.ipaHint": "（音标提示）",
         "fb.readOk": "✓ 记为「认识」", "fb.readNo": "已记「不认识」· 再跟读一遍",
@@ -2488,7 +2710,8 @@
         "weak.read": "认错 {a} / 认对 {b}", "weak.spell": "拼错 {a} / 拼对 {b}",
         "status.mastered": "已掌握", "status.learning": "学习中", "status.new": "未认读",
         "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.listen": "听 {a}/{b}", "bank.empty": "暂无",
-        "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度",
+        "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度", "bank.copyWeekly": "复制周报",
+        "report.line": "覆盖 {a}/{b}｜主动掌握 {c}/{d}｜识别掌握 {e}/{f}｜薄弱 {g}｜今日到期完成 {h}/{i}",
         "settings.themeLabel": "外观", "settings.themeHint": "昼·纸 / 夜·墨",
         "settings.light": "昼", "settings.dark": "夜",
         "settings.langLabel": "界面语言", "settings.langHint": "词条释义仍为中文",
@@ -2509,6 +2732,8 @@
         "alert.importOk": "已合并，自定义词 {n} 条", "alert.importFail": "导入失败：",
         "alert.needArray": "需要 JSON 数组",
         "alert.iosHint": "iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。",
+        "alert.weeklyCopied": "周报已复制；粘贴到本周计划的 YAML 区即可。",
+        "alert.weeklyCopyFail": "无法自动复制，请手动复制：",
         "confirm.reset": "清空所有认读/拼写统计？词库保留。",
         "pwa.localMode": "本地文件模式；线上见 GitHub Pages。"
       },
@@ -2518,7 +2743,8 @@
         "stat.total": "Words", "stat.new": "Unseen", "stat.weak": "Weak", "stat.mastered": "Mastered",
         "tab.learn": "🧠 Learn", "tab.chapters": "📚 Chapters", "tab.weak": "📉 Weak",
         "tab.bank": "📋 Words", "tab.settings": "⚙ Settings",
-        "filter.all": "All", "filter.due": "Due today", "filter.new": "Unseen", "filter.core": "Core 6",
+        "filter.all": "All", "filter.active": "Active core", "filter.recognition": "Recognition",
+        "filter.due": "Due today", "filter.new": "Unseen", "filter.core": "Legacy key",
         "filter.star": "★ Key", "filter.hard": "Weak", "filter.mastered": "Mastered",
         "home.due": "📅 {n} words due for review · tap to start",
         "daily.streak": "🔥 {n}-day streak",
@@ -2547,10 +2773,11 @@
         "sync.statusFail": "⚠️ Sync failed ({m}). Check network or token.",
         "sync.confirmOff": "This device will stop syncing (cloud data and other devices keep theirs). Continue?",
         "sync.fail": "Sync failed: ",
-        "ch.all": "All chapters", "ch.other": "Other · custom", "ch.day": "Day {n}",
+        "ch.all": "All packs", "ch.other": "Other · custom", "ch.day": "Pack {n}",
         "ch.words": "{n} words", "ch.fresh": "unseen {n}", "ch.mastered": "mastered {n}",
         "badge.current": "Chapter: {x}", "badge.shuffle": " · 🔀 shuffled",
-        "hero.progress": "{x} · mastery",
+        "hero.progress": "{x} · tier progress",
+        "hero.stats": "coverage {a}/{b} · active {c}/{d} · recognition {e}/{f}",
         "chapters.tip": "Pick one chapter to review, or shuffle every chapter together.",
         "chapters.shuffle": "🔀 Shuffle all", "chapters.all": "Review all",
         "sess.progress": "Round {a}/{b}", "sess.empty": "Nothing in this round",
@@ -2563,7 +2790,11 @@
         "learn.tipNone": "No words match this filter. Try “All” or “Unseen”.",
         "learn.emptyTitle": "No words left in this round",
         "learn.emptyBody": "Change the chapter or scope, then tap “Another round”",
-        "scope.chapterCap": "Chapter", "scope.rangeCap": "Scope",
+        "scope.chapterCap": "Pack", "scope.rangeCap": "Scope",
+        "scope.sourceCap": "Source", "scope.skillCap": "Skill",
+        "source.all": "All sources", "source.custom": "Custom",
+        "skill.all": "All skills", "skill.listening": "Listening", "skill.reading": "Reading",
+        "skill.writing": "Writing", "skill.speaking": "Speaking", "skill.general": "General",
         "tab.home": "🏠 Home",
         "home.start": "Start learning",
         "home.startSub": "{n} words this round · {scope}",
@@ -2589,10 +2820,11 @@
         "listen.think": "🎧 What did you hear?",
         "listen.placeholder": "Type what you heard…",
         "meta.star": "★ key", "meta.recog": "🏷️ recognition only", "meta.stats": "spell ✗{a} · read ✗{b}",
+        "meta.active": "Active core", "meta.recognition": "Recognition",
         "btn.listen": "🔊 Listen again", "btn.gotIt": "Got it, next",
         "btn.dontKnow": "Don’t know", "btn.know": "I know it",
         "btn.speak": "🔊 Audio", "btn.next": "Continue",
-        "btn.check": "Check ↩", "btn.hint": "Hint", "btn.skip": "Skip",
+        "btn.check": "Check ↩", "btn.hint": "Hint", "btn.skip": "Skip", "btn.promote": "Promote to active",
         "read.think": "Think of the English first, then answer",
         "spell.placeholder": "Type the spelling…", "spell.ipaHint": "(IPA hint)",
         "fb.readOk": "✓ Marked as known", "fb.readNo": "Marked as unknown · repeat after the audio",
@@ -2606,7 +2838,8 @@
         "weak.read": "read ✗{a} / ✓{b}", "weak.spell": "spell ✗{a} / ✓{b}",
         "status.mastered": "Mastered", "status.learning": "Learning", "status.new": "Unseen",
         "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.listen": "listen {a}/{b}", "bank.empty": "Empty",
-        "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress",
+        "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress", "bank.copyWeekly": "Copy weekly report",
+        "report.line": "coverage {a}/{b} | active mastered {c}/{d} | recognition mastered {e}/{f} | weak {g} | due completed {h}/{i}",
         "settings.themeLabel": "Appearance", "settings.themeHint": "Paper by day / ink by night",
         "settings.light": "Day", "settings.dark": "Night",
         "settings.langLabel": "Interface language",
@@ -2628,6 +2861,8 @@
         "alert.importOk": "Merged — {n} custom words", "alert.importFail": "Import failed: ",
         "alert.needArray": "Expected a JSON array",
         "alert.iosHint": "On iPhone, open in Safari → Share → Add to Home Screen.",
+        "alert.weeklyCopied": "Weekly report copied. Paste it into this week's YAML.",
+        "alert.weeklyCopyFail": "Automatic copy failed. Copy this manually:",
         "confirm.reset": "Clear all recall and spelling stats? Your words are kept.",
         "pwa.localMode": "Local file mode — the online version lives on GitHub Pages."
       }
@@ -2726,7 +2961,7 @@
       });
       return {
         app: "ielts-vocab-trainer",
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         data
       };
