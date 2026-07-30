@@ -258,7 +258,8 @@ window.VOCAB_SOURCE_CATALOG = {
   "listening-scenarios": { zh: "雅思听力场景类词汇", en: "Listening scenarios" },
   "writing-topic": { zh: "写作话题词汇", en: "Writing topics" },
   "speaking-topic": { zh: "口语话题词汇", en: "Speaking topics" },
-  "reading-question-paraphrase": { zh: "阅读题干vs答案同义替换", en: "Reading question paraphrases" }
+  "reading-question-paraphrase": { zh: "阅读题干vs答案同义替换", en: "Reading question paraphrases" },
+  "personal-error": { zh: "个人新增/错词", en: "Personal / mistakes" }
 };
 
 window.VOCAB_METADATA_FOR_PACK = function (packId) {

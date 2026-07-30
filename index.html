@@ -493,6 +493,30 @@
       cursor: pointer;
     }
     .tier-btn:hover { border-color: var(--accent); }
+    .quick-add {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 0.8fr 0.8fr auto;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--r-md);
+      background: var(--card);
+    }
+    .quick-add input, .quick-add select {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--card2);
+      color: var(--text);
+      padding: 9px 10px;
+      font: inherit;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 720px) {
+      .quick-add { grid-template-columns: 1fr 1fr; }
+      .quick-add .btn { grid-column: 1 / -1; }
+    }
 
     /* —— 设置 —— */
     textarea#importBox {
@@ -924,6 +948,25 @@
     <section id="bank" class="panel">
       <div class="flow-tip" id="bankTip" data-i18n="bank.tip">
         列表跟随上方的「章节 × 范围」。选「薄弱」即按错误权重排序。
+      </div>
+      <div class="flow-tip" data-i18n="bank.addHelp">
+        到期词由系统自动生成，不用手动加入。遇到真题错词时，在下面填写英文和中文即可加入刷词题库。
+      </div>
+      <div class="quick-add">
+        <input id="addEn" data-i18n-placeholder="bank.addEn" placeholder="英文单词或短语" />
+        <input id="addZh" data-i18n-placeholder="bank.addZh" placeholder="中文意思" />
+        <select id="addTier">
+          <option value="active" data-i18n="meta.active">主动核心</option>
+          <option value="recognition" data-i18n="meta.recognition">识别扩展</option>
+        </select>
+        <select id="addSkill">
+          <option value="general" data-i18n="skill.general">综合</option>
+          <option value="listening" data-i18n="skill.listening">听力</option>
+          <option value="reading" data-i18n="skill.reading">阅读</option>
+          <option value="writing" data-i18n="skill.writing">写作</option>
+          <option value="speaking" data-i18n="skill.speaking">口语</option>
+        </select>
+        <button class="btn primary" id="btnAddWord" data-i18n="bank.addWord">加入题库</button>
       </div>
       <div class="bank-list" id="bankList"></div>
       <div class="actions" style="margin-top:12px">
@@ -1360,7 +1403,7 @@
         ? window.VOCAB_METADATA_FOR_PACK(packId)
         : {};
       const tags = Array.isArray(w.tags) ? w.tags : [];
-      const sourceIds = [...new Set([...(meta.sourceIds || []), ...(w.sourceIds || [])])];
+      const sourceIds = [...new Set([...(w.sourceIds || []), ...(meta.sourceIds || [])])];
       const skills = [...new Set([...(meta.skills || []), ...(w.skills || [])])];
       let tier = w.tier || meta.tier || (isCustom ? "recognition" : "active");
       if (!w.tier && (w.star || tags.includes("core"))) tier = "active";
@@ -2523,6 +2566,39 @@
     document.getElementById("btnExportProgress").onclick = () => {
       downloadJson(progress, "vocab-progress.json");
     };
+    document.getElementById("btnAddWord").onclick = () => {
+      const en = document.getElementById("addEn").value.trim();
+      const zh = document.getElementById("addZh").value.trim();
+      if (!en || !zh) {
+        alert(t("alert.addNeedBoth"));
+        return;
+      }
+      const tier = document.getElementById("addTier").value;
+      const skill = document.getElementById("addSkill").value;
+      const custom = loadCustom();
+      const map = new Map(custom.map(w => [normKey(w.en), w]));
+      const existing = map.get(normKey(en)) || {};
+      map.set(normKey(en), {
+        ...existing,
+        en,
+        zh,
+        tags: [...new Set([...(existing.tags || []), "custom", "personal-error"])],
+        sourceIds: [...new Set([...(existing.sourceIds || []), "personal-error"])],
+        tier,
+        skills: [...new Set([...(existing.skills || []), skill])],
+        topic: t("source.personal")
+      });
+      saveCustom([...map.values()]);
+      document.getElementById("addEn").value = "";
+      document.getElementById("addZh").value = "";
+      sourceFilter = "personal-error";
+      skillFilter = "all";
+      tierFilter = "all";
+      filter = tier;
+      setChapter("all");
+      refreshAll();
+      alert(t("alert.addedWord", { w: en }));
+    };
     function downloadJson(data, name) {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
@@ -2667,6 +2743,7 @@
         "scope.chapterCap": "词包", "scope.rangeCap": "范围",
         "scope.sourceCap": "来源", "scope.skillCap": "技能",
         "source.all": "全部来源", "source.custom": "自定义",
+        "source.personal": "个人新增/错词",
         "skill.all": "全部技能", "skill.listening": "听力", "skill.reading": "阅读",
         "skill.writing": "写作", "skill.speaking": "口语", "skill.general": "综合",
         "tab.home": "🏠 首页",
@@ -2711,6 +2788,8 @@
         "status.mastered": "已掌握", "status.learning": "学习中", "status.new": "未认读",
         "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.listen": "听 {a}/{b}", "bank.empty": "暂无",
         "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度", "bank.copyWeekly": "复制周报",
+        "bank.addHelp": "到期词由系统自动生成，不用手动加入。遇到真题错词时，在下面填写英文和中文即可加入刷词题库。",
+        "bank.addEn": "英文单词或短语", "bank.addZh": "中文意思", "bank.addWord": "加入题库",
         "report.line": "覆盖 {a}/{b}｜主动掌握 {c}/{d}｜识别掌握 {e}/{f}｜薄弱 {g}｜今日到期完成 {h}/{i}",
         "settings.themeLabel": "外观", "settings.themeHint": "昼·纸 / 夜·墨",
         "settings.light": "昼", "settings.dark": "夜",
@@ -2734,6 +2813,8 @@
         "alert.iosHint": "iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。",
         "alert.weeklyCopied": "周报已复制；粘贴到本周计划的 YAML 区即可。",
         "alert.weeklyCopyFail": "无法自动复制，请手动复制：",
+        "alert.addNeedBoth": "请同时填写英文和中文意思。",
+        "alert.addedWord": "“{w}”已加入刷词题库。",
         "confirm.reset": "清空所有认读/拼写统计？词库保留。",
         "pwa.localMode": "本地文件模式；线上见 GitHub Pages。"
       },
@@ -2793,6 +2874,7 @@
         "scope.chapterCap": "Pack", "scope.rangeCap": "Scope",
         "scope.sourceCap": "Source", "scope.skillCap": "Skill",
         "source.all": "All sources", "source.custom": "Custom",
+        "source.personal": "Personal / mistakes",
         "skill.all": "All skills", "skill.listening": "Listening", "skill.reading": "Reading",
         "skill.writing": "Writing", "skill.speaking": "Speaking", "skill.general": "General",
         "tab.home": "🏠 Home",
@@ -2839,6 +2921,8 @@
         "status.mastered": "Mastered", "status.learning": "Learning", "status.new": "Unseen",
         "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.listen": "listen {a}/{b}", "bank.empty": "Empty",
         "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress", "bank.copyWeekly": "Copy weekly report",
+        "bank.addHelp": "Due words are scheduled automatically. For a new mistake, enter its English and Chinese meaning below to add it to the drill bank.",
+        "bank.addEn": "English word or phrase", "bank.addZh": "Chinese meaning", "bank.addWord": "Add word",
         "report.line": "coverage {a}/{b} | active mastered {c}/{d} | recognition mastered {e}/{f} | weak {g} | due completed {h}/{i}",
         "settings.themeLabel": "Appearance", "settings.themeHint": "Paper by day / ink by night",
         "settings.light": "Day", "settings.dark": "Night",
@@ -2863,6 +2947,8 @@
         "alert.iosHint": "On iPhone, open in Safari → Share → Add to Home Screen.",
         "alert.weeklyCopied": "Weekly report copied. Paste it into this week's YAML.",
         "alert.weeklyCopyFail": "Automatic copy failed. Copy this manually:",
+        "alert.addNeedBoth": "Enter both the English and Chinese meaning.",
+        "alert.addedWord": "“{w}” was added to the drill bank.",
         "confirm.reset": "Clear all recall and spelling stats? Your words are kept.",
         "pwa.localMode": "Local file mode — the online version lives on GitHub Pages."
       }
@@ -2904,6 +2990,9 @@
       document.documentElement.setAttribute("lang", lang === "en" ? "en" : "zh-CN");
       document.querySelectorAll("[data-i18n]").forEach(el => {
         el.textContent = t(el.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder));
       });
       document.getElementById("langText").textContent = lang === "en" ? "中文" : "EN";
       document.querySelectorAll("#segLang button").forEach(b =>
@@ -3049,7 +3138,7 @@
     updateBackupInfo();
     renderSyncUi();
     if (syncEnabled()) syncPull(); // 打开即拉取其他设备的最新进度
-    showPanel("home");
+    showPanel(deepLink.get("panel") || "home");
   </script>
 </body>
 </html>
