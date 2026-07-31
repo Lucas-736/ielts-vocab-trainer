@@ -495,7 +495,7 @@
     .tier-btn:hover { border-color: var(--accent); }
     .quick-add {
       display: grid;
-      grid-template-columns: 1.2fr 1.2fr 0.8fr 0.8fr auto;
+      grid-template-columns: 1fr 1fr auto;
       gap: 8px;
       margin: 12px 0;
       padding: 12px;
@@ -503,7 +503,15 @@
       border-radius: var(--r-md);
       background: var(--card);
     }
-    .quick-add input, .quick-add select {
+    .quick-add textarea {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 116px;
+      resize: vertical;
+      line-height: 1.65;
+      font-family: ui-monospace, Menlo, monospace;
+    }
+    .quick-add textarea, .quick-add select {
       min-width: 0;
       border: 1px solid var(--line);
       border-radius: 9px;
@@ -512,6 +520,13 @@
       padding: 9px 10px;
       font: inherit;
       font-size: 0.8rem;
+    }
+    .batch-preview {
+      grid-column: 1 / -1;
+      min-height: 1.4em;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.5;
     }
     @media (max-width: 720px) {
       .quick-add { grid-template-columns: 1fr 1fr; }
@@ -950,11 +965,12 @@
         列表跟随上方的「章节 × 范围」。选「薄弱」即按错误权重排序。
       </div>
       <div class="flow-tip" data-i18n="bank.addHelp">
-        到期词由系统自动生成，不用手动加入。遇到真题错词时，在下面填写英文和中文即可加入刷词题库。
+        到期词由系统自动生成。新增词可从表格或笔记一次粘贴多行，支持 Tab、竖线、中文冒号或“ - ”分隔英文与中文。
       </div>
       <div class="quick-add">
-        <input id="addEn" data-i18n-placeholder="bank.addEn" placeholder="英文单词或短语" />
-        <input id="addZh" data-i18n-placeholder="bank.addZh" placeholder="中文意思" />
+        <textarea id="batchWords" data-i18n-placeholder="bank.batchPlaceholder"
+                  placeholder="allocate	分配；拨给&#10;in the long run | 从长远来看&#10;feasible：可行的"></textarea>
+        <div class="batch-preview" id="batchPreview" data-i18n="bank.batchEmpty">每行一个词；粘贴后会自动预检和去重。</div>
         <select id="addTier">
           <option value="active" data-i18n="meta.active">主动核心</option>
           <option value="recognition" data-i18n="meta.recognition">识别扩展</option>
@@ -966,7 +982,7 @@
           <option value="writing" data-i18n="skill.writing">写作</option>
           <option value="speaking" data-i18n="skill.speaking">口语</option>
         </select>
-        <button class="btn primary" id="btnAddWord" data-i18n="bank.addWord">加入题库</button>
+        <button class="btn primary" id="btnAddWord" data-i18n="bank.addBatch">批量加入题库</button>
       </div>
       <div class="bank-list" id="bankList"></div>
       <div class="actions" style="margin-top:12px">
@@ -2566,38 +2582,95 @@
     document.getElementById("btnExportProgress").onclick = () => {
       downloadJson(progress, "vocab-progress.json");
     };
+
+    function parseBatchWords(value) {
+      const seen = new Set();
+      const words = [];
+      let invalid = 0;
+      let repeated = 0;
+      String(value || "").split(/\r?\n/).forEach(raw => {
+        const line = raw.trim().replace(/^(?:[-*•]\s+|\d+[.)、]\s*)/, "");
+        if (!line) return;
+        const match = line.match(/^(.+?)(?:\t+|\s*[|｜]\s*|\s*(?:=>|→|：)\s*|\s+[-–—]\s+|:\s+)(.+)$/);
+        if (!match) {
+          invalid += 1;
+          return;
+        }
+        const en = match[1].trim().replace(/^["']|["']$/g, "");
+        const zh = match[2].trim().replace(/^["']|["']$/g, "");
+        const key = normKey(en);
+        if (!en || !zh || !/[a-z]/i.test(en)) {
+          invalid += 1;
+        } else if (seen.has(key)) {
+          repeated += 1;
+        } else {
+          seen.add(key);
+          words.push({ en, zh });
+        }
+      });
+      return { words, invalid, repeated };
+    }
+
+    function batchSummary() {
+      const result = parseBatchWords(document.getElementById("batchWords").value);
+      const existing = new Set(allWords().map(w => normKey(w.en)));
+      result.updating = result.words.filter(w => existing.has(normKey(w.en))).length;
+      result.adding = result.words.length - result.updating;
+      return result;
+    }
+
+    function renderBatchPreview() {
+      const result = batchSummary();
+      const el = document.getElementById("batchPreview");
+      el.textContent = result.words.length
+        ? t("bank.batchPreview", {
+            add: result.adding,
+            update: result.updating,
+            repeat: result.repeated,
+            invalid: result.invalid
+          })
+        : (result.invalid ? t("bank.batchNoValid", { invalid: result.invalid }) : t("bank.batchEmpty"));
+    }
+
+    document.getElementById("batchWords").addEventListener("input", renderBatchPreview);
     document.getElementById("btnAddWord").onclick = () => {
-      const en = document.getElementById("addEn").value.trim();
-      const zh = document.getElementById("addZh").value.trim();
-      if (!en || !zh) {
-        alert(t("alert.addNeedBoth"));
+      const result = batchSummary();
+      if (!result.words.length) {
+        alert(t("alert.addNeedRows"));
         return;
       }
       const tier = document.getElementById("addTier").value;
       const skill = document.getElementById("addSkill").value;
       const custom = loadCustom();
       const map = new Map(custom.map(w => [normKey(w.en), w]));
-      const existing = map.get(normKey(en)) || {};
-      map.set(normKey(en), {
-        ...existing,
-        en,
-        zh,
-        tags: [...new Set([...(existing.tags || []), "custom", "personal-error"])],
-        sourceIds: [...new Set([...(existing.sourceIds || []), "personal-error"])],
-        tier,
-        skills: [...new Set([...(existing.skills || []), skill])],
-        topic: t("source.personal")
+      result.words.forEach(({ en, zh }) => {
+        const existing = map.get(normKey(en)) || {};
+        map.set(normKey(en), {
+          ...existing,
+          en,
+          zh,
+          tags: [...new Set([...(existing.tags || []), "custom", "personal-error"])],
+          sourceIds: [...new Set([...(existing.sourceIds || []), "personal-error"])],
+          tier,
+          skills: [...new Set([...(existing.skills || []), skill])],
+          topic: t("source.personal")
+        });
       });
       saveCustom([...map.values()]);
-      document.getElementById("addEn").value = "";
-      document.getElementById("addZh").value = "";
+      document.getElementById("batchWords").value = "";
       sourceFilter = "personal-error";
       skillFilter = "all";
       tierFilter = "all";
       filter = tier;
       setChapter("all");
       refreshAll();
-      alert(t("alert.addedWord", { w: en }));
+      renderBatchPreview();
+      alert(t("alert.addedBatch", {
+        n: result.words.length,
+        add: result.adding,
+        update: result.updating,
+        skipped: result.repeated + result.invalid
+      }));
     };
     function downloadJson(data, name) {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -2788,8 +2861,12 @@
         "status.mastered": "已掌握", "status.learning": "学习中", "status.new": "未认读",
         "bank.read": "认 {a}/{b}", "bank.spell": "拼 {a}/{b}", "bank.listen": "听 {a}/{b}", "bank.empty": "暂无",
         "bank.exportBank": "导出词库 JSON", "bank.exportProgress": "导出进度", "bank.copyWeekly": "复制周报",
-        "bank.addHelp": "到期词由系统自动生成，不用手动加入。遇到真题错词时，在下面填写英文和中文即可加入刷词题库。",
-        "bank.addEn": "英文单词或短语", "bank.addZh": "中文意思", "bank.addWord": "加入题库",
+        "bank.addHelp": "到期词由系统自动生成。新增词可从表格或笔记一次粘贴多行，支持 Tab、竖线、中文冒号或“ - ”分隔英文与中文。",
+        "bank.batchPlaceholder": "allocate\t分配；拨给\nin the long run | 从长远来看\nfeasible：可行的",
+        "bank.batchEmpty": "每行一个词；粘贴后会自动预检和去重。",
+        "bank.batchPreview": "可新增 {add} 条 · 更新已有 {update} 条 · 跳过行内重复 {repeat} 条 · 无法识别 {invalid} 行",
+        "bank.batchNoValid": "还没有可加入的词；{invalid} 行无法识别，请用“英文 | 中文”格式。",
+        "bank.addBatch": "批量加入题库",
         "report.line": "覆盖 {a}/{b}｜主动掌握 {c}/{d}｜识别掌握 {e}/{f}｜薄弱 {g}｜今日到期完成 {h}/{i}",
         "settings.themeLabel": "外观", "settings.themeHint": "昼·纸 / 夜·墨",
         "settings.light": "昼", "settings.dark": "夜",
@@ -2813,8 +2890,8 @@
         "alert.iosHint": "iPhone 请用 Safari 打开 → 分享 → 添加到主屏幕。",
         "alert.weeklyCopied": "周报已复制；粘贴到本周计划的 YAML 区即可。",
         "alert.weeklyCopyFail": "无法自动复制，请手动复制：",
-        "alert.addNeedBoth": "请同时填写英文和中文意思。",
-        "alert.addedWord": "“{w}”已加入刷词题库。",
+        "alert.addNeedRows": "请粘贴至少一行“英文 | 中文”。",
+        "alert.addedBatch": "已处理 {n} 条：新增 {add} 条，更新已有 {update} 条，跳过 {skipped} 行。",
         "confirm.reset": "清空所有认读/拼写统计？词库保留。",
         "pwa.localMode": "本地文件模式；线上见 GitHub Pages。"
       },
@@ -2921,8 +2998,12 @@
         "status.mastered": "Mastered", "status.learning": "Learning", "status.new": "Unseen",
         "bank.read": "read {a}/{b}", "bank.spell": "spell {a}/{b}", "bank.listen": "listen {a}/{b}", "bank.empty": "Empty",
         "bank.exportBank": "Export words JSON", "bank.exportProgress": "Export progress", "bank.copyWeekly": "Copy weekly report",
-        "bank.addHelp": "Due words are scheduled automatically. For a new mistake, enter its English and Chinese meaning below to add it to the drill bank.",
-        "bank.addEn": "English word or phrase", "bank.addZh": "Chinese meaning", "bank.addWord": "Add word",
+        "bank.addHelp": "Due words are scheduled automatically. Paste multiple rows from a sheet or note; separate English and Chinese with a tab, pipe, Chinese colon, or spaced dash.",
+        "bank.batchPlaceholder": "allocate\t分配；拨给\nin the long run | 从长远来看\nfeasible：可行的",
+        "bank.batchEmpty": "One word per row. Pasted rows are checked and deduplicated automatically.",
+        "bank.batchPreview": "{add} new · {update} existing to update · {repeat} repeated rows skipped · {invalid} invalid rows",
+        "bank.batchNoValid": "No valid words yet; {invalid} rows could not be read. Use “English | Chinese”.",
+        "bank.addBatch": "Add batch",
         "report.line": "coverage {a}/{b} | active mastered {c}/{d} | recognition mastered {e}/{f} | weak {g} | due completed {h}/{i}",
         "settings.themeLabel": "Appearance", "settings.themeHint": "Paper by day / ink by night",
         "settings.light": "Day", "settings.dark": "Night",
@@ -2947,8 +3028,8 @@
         "alert.iosHint": "On iPhone, open in Safari → Share → Add to Home Screen.",
         "alert.weeklyCopied": "Weekly report copied. Paste it into this week's YAML.",
         "alert.weeklyCopyFail": "Automatic copy failed. Copy this manually:",
-        "alert.addNeedBoth": "Enter both the English and Chinese meaning.",
-        "alert.addedWord": "“{w}” was added to the drill bank.",
+        "alert.addNeedRows": "Paste at least one “English | Chinese” row.",
+        "alert.addedBatch": "Processed {n}: {add} new, {update} updated, {skipped} skipped.",
         "confirm.reset": "Clear all recall and spelling stats? Your words are kept.",
         "pwa.localMode": "Local file mode — the online version lives on GitHub Pages."
       }
